@@ -12,6 +12,7 @@ import Unauthorized from "./components/Unauthorized";
 import Home from "./components/Home";
 import RequireAuth from "./components/RequireAuth";
 import GlobalStyle from "./styles/GlobalStyle";
+import Register from "./components/Register";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Router>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
             <Route path="/unauthorized" element={<Unauthorized />} />
             <Route
               path="/user/dashboard"
