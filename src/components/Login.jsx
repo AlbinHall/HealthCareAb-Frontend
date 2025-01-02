@@ -2,7 +2,10 @@ import styled from "styled-components";
 import { useState } from "react";
 import axios from "axios";
 import { useAuth } from "../hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+
+const apiUrl = import.meta.env.VITE_API_BASE_URL;
+
 // login page
 const LoginContainer = styled.div`
   display: flex;
@@ -76,18 +79,12 @@ function Login() {
     e.preventDefault();
 
     try {
-      const response = await axios.post(
-        "http://localhost:5148/api/auth/login",
-        credentials,
-        {
-          withCredentials: true,
-          // using withCredentials is crutial for and request that needs to check authorization!
-          // so remember to user this if neede
-        }
-      );
+      const response = await axios.post(`${apiUrl}/auth/login`, credentials, {
+        withCredentials: true,
+        // using withCredentials is crutial for and request that needs to check authorization!
+      });
 
       console.log("Login successful:", JSON.stringify(response.data));
-      // log response data
 
       const { loggedInUser, roles } = response.data;
 
@@ -133,6 +130,9 @@ function Login() {
         />
         <LoginButton type="submit">Login</LoginButton>
       </FormWrapper>
+      <p>
+        No account? <Link to="/register">Register here</Link>
+      </p>
     </LoginContainer>
   );
 }
