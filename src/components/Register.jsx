@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 
 const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
-// login page
 const RegisterContainer = styled.div`
   display: flex;
   align-items: center;
