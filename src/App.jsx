@@ -13,6 +13,7 @@ import Home from "./components/Home";
 import RequireAuth from "./components/RequireAuth";
 import GlobalStyle from "./styles/GlobalStyle";
 import Register from "./components/Register";
+import "./styles/Global.css";
 
 function App() {
   return (
