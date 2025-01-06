@@ -4,7 +4,7 @@ import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import 'moment/locale/sv';
 import { useAuth } from "../hooks/useAuth";
-import axios from 'axios';
+
 const localizer = momentLocalizer(moment);
 
 // Custom time formats
@@ -95,15 +95,29 @@ const MyCalendar = () => {
     setTimeError(''); // Reset time error
   };
 
-  const handleAddEvent = async () => {
-    try {
-      setEvents([...events, {
-        title: newEvent.title,
-        start: newEvent.start,
-        end: newEvent.end,
-      }]);
+  const handleAddEvent = () => {
+    if (newEvent.title && newEvent.start && newEvent.end) {
+      const startHour = moment(newEvent.start).hour();
+      const endHour = moment(newEvent.end).hour();
+  
+      // Validate time range
+      if (startHour < 8 || endHour > 16) {
+        setTimeError('Tiden måste vara mellan 08:00 och 16:00.');
+        return;
+      }
+  
+      const splitEvents = splitEventIntoIntervals(newEvent); // Split the event into 30-minute intervals
+  
+      // Remove events outside 08:00 - 16:00 for each day in the selected range
+      const updatedEvents = removeEventsOutsideRange(
+        events,
+        moment(newEvent.start).startOf('day'),
+        moment(newEvent.end).endOf('day')
+      );
+  
+      setEvents([...updatedEvents, ...splitEvents]); // Add all intervals to the events list
       setIsModalOpen(false);
-    } catch (error) {
+      setNewEvent({ title: '', start: '', end: '', isSick: false });
     }
   };
 
@@ -112,22 +126,14 @@ const MyCalendar = () => {
     setSelectedEvent(event);
   };
 
-  const handleUpdateEvent = async (updatedEvent) => {
-    try {
-      setEvents(events.map((ev) => (ev.id === updatedEvent.id ? updatedEvent : ev)));
-      setSelectedEvent(null);
-    } catch (error) {
-      console.error('Error updating availability:', error);
-    }
+  const handleUpdateEvent = (updatedEvent) => {
+    setEvents(events.map((ev) => (ev.id === updatedEvent.id ? updatedEvent : ev)));
+    setSelectedEvent(null);
   };
 
-  const handleDeleteEvent = async () => {
-    try {
-      setEvents(events.filter((ev) => ev.id !== selectedEvent.id));
-      setSelectedEvent(null);
-    } catch (error) {
-      console.error('Error deleting availability:', error);
-    }
+  const handleDeleteEvent = () => {
+    setEvents(events.filter((ev) => ev.id !== selectedEvent.id));
+    setSelectedEvent(null);
   };
 
   // Custom event style based on isSick
@@ -153,11 +159,20 @@ const MyCalendar = () => {
   const handleTimeChange = (field, value) => {
     const date = moment(value);
     const minutes = date.minutes();
+    const hour = date.hour();
+  
+    // Validate 30-minute intervals
     if (minutes % 30 !== 0) {
       setTimeError('Vänligen välj en tid i 30-minutersintervall (t.ex., 09:00 eller 09:30).');
       return;
     }
-
+  
+    // Validate time range (08:00 - 16:00)
+    if (hour < 8 || hour > 16) {
+      setTimeError('Tiden måste vara mellan 08:00 och 16:00.');
+      return;
+    }
+  
     setTimeError(''); // Clear error if time is valid
     setNewEvent((prev) => ({ ...prev, [field]: date.toDate() }));
   };
@@ -231,34 +246,34 @@ const MyCalendar = () => {
 
       {/* Calendar Component */}
       <Calendar
-        localizer={localizer}
-        events={events}
-        startAccessor="start"
-        endAccessor="end"
-        defaultView="week"
-        views={['week', 'day']}
-        selectable={isAdmin} // Only allow admins to select slots
-        onSelectSlot={handleSelectSlot}
-        onSelectEvent={handleSelectEvent}
-        onNavigate={handleNavigate} // Handle navigation (next, previous)
-        eventPropGetter={eventStyleGetter} // Apply custom event styles
-        formats={timeFormats} // Use custom time formats
-        min={new Date(0, 0, 0, 8, 0, 0)} // Set minimum time to 08:00
-        max={new Date(0, 0, 0, 16, 0, 0)} // Set maximum time to 16:00
-        date={currentDate} // Control the currently displayed date
-        messages={{
-          today: 'Idag',
-          previous: 'Föregående',
-          next: 'Nästa',
-          month: 'Månad',
-          week: 'Vecka',
-          day: 'Dag',
-          agenda: 'Agenda',
-          date: 'Datum',
-          time: 'Tid',
-          event: 'Händelse',
-        }} // Customize calendar messages in Swedish
-      />
+          localizer={localizer}
+          events={events}
+          startAccessor="start"
+          endAccessor="end"
+          defaultView="week"
+          views={['week', 'day']}
+          selectable={isAdmin} // Only allow admins to select slots
+          onSelectSlot={handleSelectSlot}
+          onSelectEvent={handleSelectEvent}
+          onNavigate={handleNavigate} // Handle navigation (next, previous)
+          eventPropGetter={eventStyleGetter} // Apply custom event styles
+          formats={timeFormats} // Use custom time formats
+          min={new Date(0, 0, 0, 8, 0, 0)} // Set minimum time to 08:00
+          max={new Date(0, 0, 0, 16, 0, 0)} // Set maximum time to 16:00
+          date={currentDate} // Control the currently displayed date
+          messages={{
+            today: 'Idag',
+            previous: 'Föregående',
+            next: 'Nästa',
+            month: 'Månad',
+            week: 'Vecka',
+            day: 'Dag',
+            agenda: 'Agenda',
+            date: 'Datum',
+            time: 'Tid',
+            event: 'Händelse',
+          }} // Customize calendar messages in Swedish
+        />
 
       {/* Admin view - Only show if user is an admin */}
       {isAdmin && (
@@ -277,20 +292,23 @@ const MyCalendar = () => {
                 />
                 <label className="block mb-2">Startdatum och tid:</label>
                 <input
-                  type="datetime-local"
-                  value={moment(newEvent.start).format('YYYY-MM-DDTHH:mm')}
-                  onChange={(e) => handleTimeChange('start', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded mb-4"
-                  step="1800" // Restrict input to 30-minute intervals
-                />
-                <label className="block mb-2">Slutdatum och tid:</label>
-                <input
-                  type="datetime-local"
-                  value={moment(newEvent.end).format('YYYY-MM-DDTHH:mm')}
-                  onChange={(e) => handleTimeChange('end', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded mb-4"
-                  step="1800" // Restrict input to 30-minute intervals
-                />
+                    type="datetime-local"
+                    value={moment(newEvent.start).format('YYYY-MM-DDTHH:mm')}
+                    onChange={(e) => handleTimeChange('start', e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded mb-4"
+                    step="1800" // Restrict input to 30-minute intervals
+                    min={moment(newEvent.start).startOf('day').hour(8).format('YYYY-MM-DDTHH:mm')} // Minimum time: 08:00
+                    max={moment(newEvent.start).startOf('day').hour(16).format('YYYY-MM-DDTHH:mm')} // Maximum time: 16:00
+                  />
+                  <input
+                    type="datetime-local"
+                    value={moment(newEvent.end).format('YYYY-MM-DDTHH:mm')}
+                    onChange={(e) => handleTimeChange('end', e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded mb-4"
+                    step="1800" // Restrict input to 30-minute intervals
+                    min={moment(newEvent.end).startOf('day').hour(8).format('YYYY-MM-DDTHH:mm')} // Minimum time: 08:00
+                    max={moment(newEvent.end).startOf('day').hour(16).format('YYYY-MM-DDTHH:mm')} // Maximum time: 16:00
+                  />
                 {timeError && <p className="text-red-500 text-sm mb-4">{timeError}</p>}
                 <div className="flex justify-end space-x-2">
                   <button
