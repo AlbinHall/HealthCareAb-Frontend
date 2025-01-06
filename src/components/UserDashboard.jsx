@@ -3,6 +3,8 @@ import { useAuth } from "../hooks/useAuth";
 import Logo from "../assets/health_care_logo.svg";
 import styled from "styled-components";
 import Logout from "./Logout";
+import React from 'react';
+import MyCalendar from './Calendar';
 // div with styles
 const UserContainer = styled.div`
   display: flex;
@@ -35,6 +37,7 @@ function UserDashboard() {
       <LogoContainer src={Logo} />
       <Title>User Dashboard</Title>
       <Text>Welcome, {user}!</Text>
+      <MyCalendar />
       <Logout />
     </UserContainer>
     /*  

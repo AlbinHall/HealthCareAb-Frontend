@@ -3,6 +3,8 @@ import { useAuth } from "../hooks/useAuth";
 import Logo from "../assets/health_care_logo.svg";
 import styled from "styled-components";
 import Logout from "./Logout";
+import { Link } from "react-router-dom";
+
 // admin page, can only visit if you have role ADMIN
 const AdminContainer = styled.div`
   display: flex;
@@ -34,6 +36,7 @@ function AdminDashboard() {
       <LogoContainer src={Logo} />
       <Title>Admin Dashboard</Title>
       <Text>Welcome, {user}!</Text>
+      <Link to="/admin/schedule">Schedule</Link>
       <Logout />
     </AdminContainer>
   );
