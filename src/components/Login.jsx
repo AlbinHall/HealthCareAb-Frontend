@@ -93,6 +93,7 @@ function Login() {
         isAuthenticated: true,
         user: loggedInUser,
         roles: roles,
+        userId: response.data.userId,
       });
 
       if (roles.includes("Admin")) {
