@@ -37,7 +37,6 @@ function UserDashboard() {
       <LogoContainer src={Logo} />
       <Title>User Dashboard</Title>
       <Text>Welcome, {user}!</Text>
-      <MyCalendar />
       <Logout />
     </UserContainer>
     /*  

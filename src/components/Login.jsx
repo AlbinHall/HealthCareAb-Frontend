@@ -86,7 +86,8 @@ function Login() {
 
       console.log("Login successful:", JSON.stringify(response.data));
 
-      const { loggedInUser, roles } = response.data;
+      const loggedInUser = response.data.username;
+      const roles = response.data.roles;
 
       setAuthState({
         isAuthenticated: true,

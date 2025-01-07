@@ -11,9 +11,9 @@ function AdminSchedule() {
   const navigate = useNavigate();
   const { authState, setAuthState } = useAuth();
   const [users, setUsers] = useState([]);
-
+  console.log(authState);
   return (
-    <MyCalendar authState={authState} /> // Pass authState as a prop
+    <MyCalendar /> // Pass authState as a prop
   );
 }
 
