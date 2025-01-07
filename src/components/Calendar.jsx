@@ -4,6 +4,7 @@ import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import 'moment/locale/sv';
 import { useAuth } from "../hooks/useAuth";
+import { createAvailability } from './AdminSchedule';
 
 const localizer = momentLocalizer(moment);
 
@@ -95,7 +96,7 @@ const MyCalendar = () => {
     setTimeError(''); // Reset time error
   };
 
-  const handleAddEvent = () => {
+  const handleAddEvent = async () => {
     if (newEvent.title && newEvent.start && newEvent.end) {
       const startHour = moment(newEvent.start).hour();
       const endHour = moment(newEvent.end).hour();
@@ -116,11 +117,23 @@ const MyCalendar = () => {
       );
   
       setEvents([...updatedEvents, ...splitEvents]); // Add all intervals to the events list
+  
+      // Send availability to the backend
+      try {
+        const availability = {
+          StartTime: newEvent.start,
+          EndTime: newEvent.end,
+          IsAvailable: true, // Assuming the event is for availability
+        };
+        await createAvailability(availability);
+      } catch (error) {
+        console.error('Error creating availability:', error);
+      }
+  
       setIsModalOpen(false);
       setNewEvent({ title: '', start: '', end: '', isSick: false });
     }
   };
-
   const handleSelectEvent = (event) => {
     if (!isAdmin) return; // Only allow admins to select events
     setSelectedEvent(event);
@@ -210,7 +223,7 @@ const MyCalendar = () => {
   }
 
   return (
-    <div style={{ height: '800px', width: '90%', margin: '0 auto' }}>
+    <div style={{ height: '800px', width: '80%', margin: '0 auto' }}>
       {/* Header with Dropdowns and Log Out Button */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <div>
