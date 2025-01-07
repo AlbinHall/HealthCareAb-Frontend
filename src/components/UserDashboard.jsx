@@ -4,7 +4,8 @@ import Logo from "../assets/health_care_logo.svg";
 import styled from "styled-components";
 import Logout from "./Logout";
 import React from 'react';
-import MyCalendar from './Calendar';
+import { Link } from "react-router-dom";
+
 // div with styles
 const UserContainer = styled.div`
   display: flex;
@@ -37,6 +38,7 @@ function UserDashboard() {
       <LogoContainer src={Logo} />
       <Title>User Dashboard</Title>
       <Text>Welcome, {user}!</Text>
+      <Link to="/user/feedback" className="px-3 py-2 text-white bg-[#057d7a] rounded-lg hover:bg-[#2fadaa]">Leave feedback</Link>
       <Logout />
     </UserContainer>
     /*  
