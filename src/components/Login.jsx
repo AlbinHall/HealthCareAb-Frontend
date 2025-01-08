@@ -88,11 +88,13 @@ function Login() {
 
       const loggedInUser = response.data.username;
       const roles = response.data.roles;
+      const userid = response.data.userId;
 
       setAuthState({
         isAuthenticated: true,
         user: loggedInUser,
         roles: roles,
+        userid: userid,
       });
 
       if (roles.includes("Admin")) {
