@@ -4,20 +4,20 @@ import axios from 'axios';
 const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
 const History = () => {
-  const [journals, setJournals] = useState([]);
+  const [History, setHistory] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
 
   useEffect(() => {
-    const fetchJournals = async () => {
+    const fetchHistory = async () => {
       try {
         const response = await axios.get(`${apiUrl}/History/getHistory`, {
           withCredentials: true
         });
 
-        setJournals(Array.isArray(response.data) ? response.data : [response.data]);
+        setHistory(Array.isArray(response.data) ? response.data : [response.data]);
         setError(null);
       } catch (err) {
         setError(err.response?.data || 'error fetching history');
@@ -26,13 +26,13 @@ const History = () => {
       }
     };
 
-    fetchJournals();
+    fetchHistory();
   }, []);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = journals.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(journals.length / itemsPerPage);
+  const currentItems = History.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(History.length / itemsPerPage);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
@@ -71,7 +71,7 @@ const History = () => {
           {currentItems.map((journal) => (
             <div 
               key={journal.id} 
-              className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-200 overflow-hidden transform hover:-translate-y-1 transition-transform duration-300"
+              className="bg-white rounded-xl shadow-lg hover:shadow-xl border border-gray-200 overflow-hidden transform hover:-translate-y-1 transition-transform duration-300"
             >
               <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
                 <h2 className="text-xl font-semibold text-white">
@@ -117,7 +117,7 @@ const History = () => {
           ))}
         </div>
 
-        {journals.length === 0 && (
+        {History.length === 0 && (
           <div className="text-center text-gray-500 mt-8 bg-white p-8 rounded-lg shadow">
             <p className="text-xl">No History For This User.</p>
           </div>
