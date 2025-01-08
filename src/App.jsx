@@ -16,6 +16,7 @@ import Register from "./components/Register";
 import "./styles/Global.css";
 import AdminSchedule from "./components/AdminSchedule";
 import Feedback from "./components/Feedback";
+import History from "./components/History";
 
 
 function App() {
@@ -41,6 +42,14 @@ function App() {
               element={
                 <RequireAuth allowedRoles={["User"]}>
                   <Feedback />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/user/history"
+              element={
+                <RequireAuth allowedRoles={["User"]}>
+                  <History /> 
                 </RequireAuth>
               }
             />
