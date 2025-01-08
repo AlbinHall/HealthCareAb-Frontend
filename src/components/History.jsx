@@ -59,7 +59,7 @@ const History = () => {
       <div className="bg-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <h1 className="text-3xl font-bold text-gray-900 text-center">
-            Journal History
+            History
           </h1>
           <p className="mt-2 text-center text-gray-600">
             View your past appointments and medical records
