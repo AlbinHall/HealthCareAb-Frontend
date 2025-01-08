@@ -44,12 +44,8 @@ function UserDashboard() {
       >
         Book appointment
       </Link>
-      <Link
-        to="/user/feedback"
-        className="px-3 py-2 text-white bg-[#057d7a] rounded-lg hover:bg-[#2fadaa]"
-      >
-        Leave feedback
-      </Link>
+      <Link to="/user/feedback" className="px-3 py-2 text-white bg-[#057d7a] rounded-lg hover:bg-[#2fadaa]">Leave feedback</Link>
+      <Link to="/user/history" className="px-3 py-2 text-white bg-[#057d7a] rounded-lg hover:bg-[#2fadaa]">View History</Link>
       <Logout />
     </UserContainer>
     /*  
