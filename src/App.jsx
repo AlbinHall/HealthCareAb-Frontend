@@ -16,7 +16,7 @@ import Register from "./components/Register";
 import "./styles/Global.css";
 import AdminSchedule from "./components/AdminSchedule";
 import Feedback from "./components/Feedback";
-
+import UserSchedule from "./components/UserSchedule";
 
 function App() {
   return (
@@ -41,6 +41,14 @@ function App() {
               element={
                 <RequireAuth allowedRoles={["User"]}>
                   <Feedback />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/user/schedule"
+              element={
+                <RequireAuth allowedRoles={["User"]}>
+                  <UserSchedule />
                 </RequireAuth>
               }
             />
