@@ -89,6 +89,7 @@ const MyCalendar = (props) => {
           selectable={props.selectable}
           onSelectSlot={props.onSelectSlot}
           onSelectEvent={props.onSelectEvent}
+          eventPropGetter={props.eventPropGetter}
           events={props.events}
           startAccessor="start"
           endAccessor="end"
@@ -99,6 +100,7 @@ const MyCalendar = (props) => {
           min={new Date(0, 0, 0, 8, 0, 0)} // Set minimum time to 08:00
           max={new Date(0, 0, 0, 16, 0, 0)} // Set maximum time to 16:00
           date={currentDate} // Control the currently displayed date
+
           messages={{
             today: 'Idag',
             previous: 'Föregående',
