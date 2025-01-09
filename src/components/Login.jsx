@@ -92,9 +92,9 @@ function Login() {
 
       setAuthState({
         isAuthenticated: true,
-        user: loggedInUser,
-        roles: roles,
-        userid: userid,
+        user: response.data.username,
+        roles: response.data.roles,
+        userid: response.data.userId,
       });
 
       if (roles.includes("Admin")) {
