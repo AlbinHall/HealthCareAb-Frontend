@@ -9,7 +9,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 // API Functions
 const createAvailability = async (availability) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/availability`, availability, {
+    const response = await axios.post(`${API_BASE_URL}/availability/CreateAvailibility`, availability, {
       withCredentials: true,
     });
     return response.data;
@@ -21,7 +21,7 @@ const createAvailability = async (availability) => {
 
 const getAvailability = async (userId) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/caretakeravailability/${userId}`, {
+    const response = await axios.get(`${API_BASE_URL}/availability/${userId}`, {
       withCredentials: true,
     });
     return response.data;
@@ -29,7 +29,7 @@ const getAvailability = async (userId) => {
     console.error('Error fetching availability:', error);
     throw error;
   }
-}
+};
 
 function AdminSchedule() {
   const { authState } = useAuth();
@@ -64,7 +64,6 @@ function AdminSchedule() {
         }
       }
     };
-  
     fetchAvailability();
   }, [authState.userId]);
 
