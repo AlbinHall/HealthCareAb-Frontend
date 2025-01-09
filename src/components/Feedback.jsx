@@ -13,7 +13,7 @@ export default function Feedback() {
 
     useEffect(() => {
         const fetchAppointments = async () => {
-            const response = await axios.get(`${API_BASE_URL}/Appoitment/getappointmentbypatientid/${userid}`, {
+            const response = await axios.get(`${API_BASE_URL}/Appointment/getappointmentsbypatientid/${userid}`, {
                 withCredentials: true,
             });
             console.log("API RESPONSE: " + JSON.stringify(response.data));
