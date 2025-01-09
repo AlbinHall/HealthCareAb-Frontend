@@ -38,14 +38,6 @@ function App() {
               }
             />
             <Route
-              path="/user/feedback"
-              element={
-                <RequireAuth allowedRoles={["User"]}>
-                  <Feedback />
-                </RequireAuth>
-              }
-            />
-            <Route
               path="/user/schedule"
               element={
                 <RequireAuth allowedRoles={["User"]}>
