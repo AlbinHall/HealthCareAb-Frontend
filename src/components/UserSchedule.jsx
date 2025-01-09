@@ -10,6 +10,8 @@ const UserSchedule = () => {
   const {
     authState: { user, userId },
   } = useAuth();
+  console.log("user: ", user);
+  console.log("userId: ", userId);
   const [slots, setSlots] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [showModal, setShowModal] = useState(false);

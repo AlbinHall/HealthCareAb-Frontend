@@ -96,15 +96,13 @@ function Login() {
         throw new Error("Ogiltigt svar från server. Saknar nödvändig data.");
       }
 
-      const loggedInUser = response.data.username;
       const roles = response.data.roles;
-      console.log("Roles:", roles);
 
       setAuthState({
         isAuthenticated: true,
-        user: loggedInUser,
+        user: response.data.username,
         roles: roles,
-        userid: response.data.userId,
+        userId: response.data.userId,
       });
 
       if (roles.includes("Admin")) {
