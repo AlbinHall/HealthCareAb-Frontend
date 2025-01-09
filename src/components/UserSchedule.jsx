@@ -28,6 +28,7 @@ const UserSchedule = () => {
         title: "Tillgänglig tid",
         start: new Date(slot.startTime),
         end: new Date(slot.endTime),
+        caregiverId: slot.caregiverId,
         color: "#057d7a",
       }));
       setSlots(transformedSlots);
@@ -47,7 +48,7 @@ const UserSchedule = () => {
   const handleSubmit = async () => {
     const appointmentData = {
       patientId: userId,
-      caregiverId: 2,
+      caregiverId: selectedSlot.caregiverId,
       appointmentTime: selectedSlot.start,
     };
 
