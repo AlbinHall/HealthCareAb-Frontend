@@ -99,7 +99,7 @@ function AdminSchedule() {
           if (Array.isArray(availability) && availability.length > 0) {
             const mappedEvents = availability.map((event) => ({
               id: event.id,
-              title: "Tillgänglig",
+              title: "Available",
               isBooked: event.isBooked,
               start: new Date(event.startTime),
               end: new Date(event.endTime),
@@ -190,7 +190,7 @@ function AdminSchedule() {
     const endHour = moment(adjustedEnd).hour();
 
     if (startHour < 8 || endHour > 16) {
-      setTimeError("Tiden måste vara mellan 08:00 och 16:00.");
+      setTimeError("Time has to be between 08:00 och 16:00.");
       return;
     }
 
@@ -206,7 +206,7 @@ function AdminSchedule() {
       const endHour = moment(newEvent.end).hour();
 
       if (startHour < 8 || endHour > 16) {
-        setTimeError("Tiden måste vara mellan 08:00 och 16:00.");
+        setTimeError("Time has to be between 08:00 och 16:00.");
         return;
       }
 
@@ -227,7 +227,7 @@ function AdminSchedule() {
         // 3. Mappa och uppdatera events-tillståndet
         const mappedEvents = updatedAvailability.map((event) => ({
           id: event.id,
-          title: event.Title || "Tillgänglig", // Använd en standardtitel om Title saknas
+          title: event.Title || "Available", // Använd en standardtitel om Title saknas
           isBooked: event.isBooked || false, // Ensure isBooked is correctly set
           start: new Date(event.startTime),
           end: new Date(event.endTime),
@@ -293,7 +293,7 @@ function AdminSchedule() {
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h3 className="text-xl font-bold mb-4">Lägg till tillgänglighet</h3>
+            <h3 className="text-xl font-bold mb-4">Add availability</h3>
             <input
               type="text"
               placeholder="Titel"
@@ -303,7 +303,7 @@ function AdminSchedule() {
               }
               className="w-full p-2 border border-gray-300 rounded mb-4"
             />
-            <label className="block mb-2">Startdatum och tid:</label>
+            <label className="block mb-2">Start date and time:</label>
             <input
               type="datetime-local"
               value={moment(newEvent.start).format("YYYY-MM-DDTHH:mm")}
@@ -342,13 +342,13 @@ function AdminSchedule() {
                 onClick={() => setIsModalOpen(false)}
                 className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
               >
-                Avbryt
+                Abort
               </button>
               <button
                 onClick={handleAddEvent}
                 className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
               >
-                Lägg till
+                Add
               </button>
             </div>
           </div>
@@ -361,21 +361,21 @@ function AdminSchedule() {
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
             {selectedEvent.isBooked && selectedEvent.appointmentInfo ? (
               <>
-                <h4 className="text-lg font-semibold mb-2">Bokad tid</h4>
+                <h4 className="text-lg font-semibold mb-2">Booked time</h4>
                 <p>
-                  <strong>Patient:</strong>{" "}
+                  <strong>Caretaker:</strong>{" "}
                   {selectedEvent.appointmentInfo.patient}
                 </p>
                 <p>
-                  <strong>Vårdgivare:</strong>{" "}
+                  <strong>Caregiver:</strong>{" "}
                   {selectedEvent.appointmentInfo.caregiver}
                 </p>
                 <p>
-                  <strong>Starttid:</strong>{" "}
+                  <strong>Start time:</strong>{" "}
                   {moment(selectedEvent.start).format("YYYY-MM-DD HH:mm")}
                 </p>
                 <p>
-                  <strong>Sluttid:</strong>{" "}
+                  <strong>End time:</strong>{" "}
                   {moment(selectedEvent.end).format("YYYY-MM-DD HH:mm")}
                 </p>
                 <div className="flex justify-end mt-4">
@@ -383,13 +383,19 @@ function AdminSchedule() {
                     onClick={() => setSelectedEvent(null)}
                     className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
                   >
-                    Stäng
+                    Close
+                  </button>
+                  <button
+                    onClick={handleDeleteEvent}
+                    className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                  >
+                    Remove
                   </button>
                 </div>
               </>
             ) : (
               <>
-                <h3 className="text-xl font-bold mb-4">Ändra tillgänglighet</h3>
+                <h3 className="text-xl font-bold mb-4">Change availability</h3>
                 <input
                   type="text"
                   value={selectedEvent.title}
@@ -401,7 +407,7 @@ function AdminSchedule() {
                   }
                   className="w-full p-2 border border-gray-300 rounded mb-4"
                 />
-                <label className="block mb-2">Startdatum och tid:</label>
+                <label className="block mb-2">Start date and time:</label>
                 <input
                   type="datetime-local"
                   value={moment(selectedEvent.start).format("YYYY-MM-DDTHH:mm")}
@@ -414,7 +420,7 @@ function AdminSchedule() {
                   className="w-full p-2 border border-gray-300 rounded mb-4"
                   step="1800"
                 />
-                <label className="block mb-2">Slutdatum och tid:</label>
+                <label className="block mb-2">End date and time:</label>
                 <input
                   type="datetime-local"
                   value={moment(selectedEvent.end).format("YYYY-MM-DDTHH:mm")}
@@ -432,19 +438,19 @@ function AdminSchedule() {
                     onClick={() => setSelectedEvent(null)}
                     className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
                   >
-                    Avbryt
+                    Exit
                   </button>
                   <button
                     onClick={handleDeleteEvent}
                     className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
                   >
-                    Ta bort
+                    Remove
                   </button>
                   <button
                     onClick={handleUpdateEvent}
                     className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                   >
-                    Spara
+                    Save
                   </button>
                 </div>
               </>

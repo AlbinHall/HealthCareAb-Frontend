@@ -10,7 +10,7 @@ const localizer = momentLocalizer(moment);
 const timeFormats = {
   timeGutterFormat: "HH:mm", // Time in the gutter (left side)
   eventTimeRangeFormat: ({ start, end }, culture, localizer) =>
-    `klockan ${localizer.format(start, "HH:mm", culture)} - ${localizer.format(
+    `Time: ${localizer.format(start, "HH:mm", culture)} - ${localizer.format(
       end,
       "HH:mm",
       culture
@@ -125,15 +125,15 @@ const MyCalendar = (props) => {
         max={new Date(0, 0, 0, 16, 0, 0)} // Set maximum time to 16:00
         date={currentDate} // Control the currently displayed date
         messages={{
-          today: "Idag",
-          previous: "Föregående",
-          next: "Nästa",
-          month: "Månad",
-          week: "Vecka",
-          day: "Dag",
+          today: "Today",
+          previous: "Previous",
+          next: "Next",
+          month: "Month",
+          week: "Week",
+          day: "Day",
           agenda: "Agenda",
-          date: "Datum",
-          time: "Tid",
+          date: "Date",
+          time: "Time",
           event: "Händelse",
         }} // Customize calendar messages in Swedish
       />
