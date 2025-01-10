@@ -97,7 +97,6 @@ function Login() {
       }
 
       const roles = response.data.roles;
-      const userid = response.data.userId;
 
       setAuthState({
         isAuthenticated: true,

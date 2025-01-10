@@ -8,8 +8,8 @@ const GlobalStyle = createGlobalStyle`
     padding: 0;
     box-sizing: border-box;
     font-family: "Roboto", sans-serif;
-    width: max;
-    height: max;
+    width: 100%;
+    height: 100%;
   }
 
   .content {
