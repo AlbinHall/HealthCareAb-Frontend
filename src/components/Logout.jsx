@@ -12,14 +12,14 @@ const Logout = () => {
         }
       )
       .then((response) => {
-        window.location.href = "/login";
+        window.location.href = "/";
       })
       .catch((error) => {
         console.error("Error logging out:", error);
       });
   };
 
-  return <button onClick={handleLogout}>Logout</button>;
+  return <button onClick={handleLogout} className="px-3 py-2 text-white bg-[#057d7a] rounded-lg hover:bg-[#2fadaa]">Logout</button>;
 };
 
 export default Logout;
