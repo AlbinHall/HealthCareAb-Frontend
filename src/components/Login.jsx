@@ -86,13 +86,23 @@ function Login() {
 
       console.log("Login successful:", JSON.stringify(response.data));
 
-      const loggedInUser = response.data.username;
+      // Kontrollera att response.data har de förväntade fälten
+      if (
+        !response.data ||
+        !response.data.username ||
+        !response.data.roles ||
+        !response.data.userId
+      ) {
+        throw new Error("Ogiltigt svar från server. Saknar nödvändig data.");
+      }
+
       const roles = response.data.roles;
 
       setAuthState({
-        isAuthenticated: true,        user: response.data.username,
-        roles: response.data.roles,
-        userid: response.data.userId,
+        isAuthenticated: true,
+        user: response.data.username,
+        roles: roles,
+        userId: response.data.userId,
       });
 
       if (roles.includes("Admin")) {
