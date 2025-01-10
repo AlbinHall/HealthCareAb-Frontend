@@ -15,65 +15,67 @@ import GlobalStyle from "./styles/GlobalStyle";
 import Register from "./components/Register";
 import "./styles/Global.css";
 import AdminSchedule from "./components/AdminSchedule";
-import Feedback from "./components/Feedback";
 import UserSchedule from "./components/UserSchedule";
 import History from "./components/History";
+import Layout from "./components/Layout";
 
 function App() {
   return (
     <AuthProvider>
       <GlobalStyle />
-      <div className="content">
-        <Router>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/unauthorized" element={<Unauthorized />} />
-            <Route
-              path="/user/dashboard"
-              element={
-                <RequireAuth allowedRoles={["User"]}>
-                  <UserDashboard />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/user/schedule"
-              element={
-                <RequireAuth allowedRoles={["User"]}>
-                  <UserSchedule />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/user/history"
-              element={
-                <RequireAuth allowedRoles={["User"]}>
-                  <History /> 
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/admin/dashboard"
-              element={
-                <RequireAuth allowedRoles={["Admin"]}>
-                  <AdminDashboard />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/admin/schedule"
-              element={
-                <RequireAuth allowedRoles={["Admin"]}>
-                  <AdminSchedule />
-                </RequireAuth>
-              }
-            />
-            <Route path="/" element={<Home />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Router>
-      </div>
+      <Router>
+        <Layout>
+          <div className="content">
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/unauthorized" element={<Unauthorized />} />
+              <Route
+                path="/user/dashboard"
+                element={
+                  <RequireAuth allowedRoles={["User"]}>
+                    <UserDashboard />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/user/schedule"
+                element={
+                  <RequireAuth allowedRoles={["User"]}>
+                    <UserSchedule />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/user/history"
+                element={
+                  <RequireAuth allowedRoles={["User"]}>
+                    <History />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/admin/dashboard"
+                element={
+                  <RequireAuth allowedRoles={["Admin"]}>
+                    <AdminDashboard />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/admin/schedule"
+                element={
+                  <RequireAuth allowedRoles={["Admin"]}>
+                    <AdminSchedule />
+                  </RequireAuth>
+                }
+              />
+              <Route path="/" element={<Home />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </div>
+        </Layout>
+      </Router>
     </AuthProvider>
   );
 }
