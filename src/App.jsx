@@ -25,7 +25,6 @@ function App() {
       <GlobalStyle />
       <Router>
         <Layout>
-          <div className="content">
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
@@ -73,7 +72,6 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
-          </div>
         </Layout>
       </Router>
     </AuthProvider>
