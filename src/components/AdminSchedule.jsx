@@ -79,16 +79,43 @@ const getAppointmentById = async (appointmentId) => {
     throw error;
   }
 };
+const updateAppointment = async (appointmentId, caregiverid, newavailabilityid, oldavailabilityid, newStartTime) => {
+  const payload = {
+    AppointmentId: appointmentId,
+    caregiverid: caregiverid,
+    newavailabilityid: newavailabilityid,
+    oldavailabilityid: oldavailabilityid,
+    appointmenttime: newStartTime,
+    Status: 0,
+  };
 
+  console.log("Payload being sent:", payload); // Debugging line
+
+  try {
+    const response = await axios.put(
+      `${API_BASE_URL}/appointment/updateappointment`,
+      payload,
+      {
+        withCredentials: true,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error updating appointment time:", error);
+    throw error;
+  }
+};
 function AdminSchedule() {
-  const { authState } = useAuth(); // Correctly destructure authState
+  const { authState } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isChangeModalOpen, setIsChangeModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [events, setEvents] = useState([]);
   const [newEvent, setNewEvent] = useState({ title: "", start: "", end: "" });
   const [timeError, setTimeError] = useState("");
   const [error, setError] = useState(null);
-  const [users, setUsers] = useState([]);
+  const [availabilities, setAvailabilities] = useState([]);
+  const [selectedNewAvailability, setSelectedNewAvailability] = useState(null);
 
   useEffect(() => {
     const fetchAvailability = async () => {
@@ -99,7 +126,7 @@ function AdminSchedule() {
           if (Array.isArray(availability) && availability.length > 0) {
             const mappedEvents = availability.map((event) => ({
               id: event.id,
-              title: "Tillgänglig",
+              title: event.isBooked ? "Booked" : "Available",
               isBooked: event.isBooked,
               start: new Date(event.startTime),
               end: new Date(event.endTime),
@@ -141,7 +168,7 @@ function AdminSchedule() {
 
   const eventPropGetter = (event) => {
     const style = {
-      backgroundColor: event.isBooked ? "green" : "blue",
+      backgroundColor: event.isBooked ? "green" : "#057d7a",
       color: "white",
       borderRadius: "5px",
       border: "none",
@@ -190,7 +217,7 @@ function AdminSchedule() {
     const endHour = moment(adjustedEnd).hour();
 
     if (startHour < 8 || endHour > 16) {
-      setTimeError("Tiden måste vara mellan 08:00 och 16:00.");
+      setTimeError("Time has to be between 08:00 och 16:00.");
       return;
     }
 
@@ -206,7 +233,7 @@ function AdminSchedule() {
       const endHour = moment(newEvent.end).hour();
 
       if (startHour < 8 || endHour > 16) {
-        setTimeError("Tiden måste vara mellan 08:00 och 16:00.");
+        setTimeError("Time has to be between 08:00 och 16:00.");
         return;
       }
 
@@ -227,7 +254,7 @@ function AdminSchedule() {
         // 3. Mappa och uppdatera events-tillståndet
         const mappedEvents = updatedAvailability.map((event) => ({
           id: event.id,
-          title: event.Title || "Tillgänglig", // Använd en standardtitel om Title saknas
+          title: event.Title || "Available", // Använd en standardtitel om Title saknas
           isBooked: event.isBooked || false, // Ensure isBooked is correctly set
           start: new Date(event.startTime),
           end: new Date(event.endTime),
@@ -287,13 +314,73 @@ function AdminSchedule() {
     }
   };
 
+  const handleUpdateBookedEvent = async () => {
+    if (!selectedEvent || !selectedEvent.appointmentId) {
+      console.error("No selected event or appointment ID found.");
+      return;
+    }
+  
+    try {
+      // Fetch the user's availabilities
+      const availabilityList = await getAvailability(authState);
+      const availableSlots = availabilityList.filter((slot) => !slot.isBooked);
+  
+      // Update the availabilities state
+      setAvailabilities(availableSlots);
+      setIsChangeModalOpen(true);
+    } catch (error) {
+      console.error("Error fetching availabilities:", error);
+    }
+  };
+  
+  const handleSaveNewAppointmentTime = async () => {
+    if (!selectedNewAvailability || !selectedEvent) {
+      setError("Please select a new time slot.");
+      return;
+    }
+  
+    try {
+      // Call the updateAppointmentTime function
+      await updateAppointment(
+        selectedEvent.appointmentId, //appointmentId
+        authState.userId, //caregiverid
+        selectedNewAvailability.id,
+        selectedEvent.id, //oldavailabilityid
+        selectedNewAvailability.startTime,
+      );
+      // Fetch the updated availability list
+      const updatedAvailability = await getAvailability(authState);
+  
+      // Map and update the events state
+      const mappedEvents = updatedAvailability.map((event) => ({
+        id: event.id,
+        title: event.isBooked ? "Booked" : "Available",
+        isBooked: event.isBooked,
+        start: new Date(event.startTime),
+        end: new Date(event.endTime),
+        appointmentId: event.appointmentId,
+      }));
+  
+      // Update the events state
+      setEvents(mappedEvents);
+  
+      // Close the modal and reset states
+      setIsChangeModalOpen(false);
+      setSelectedEvent(null);
+      setSelectedNewAvailability(null);
+    } catch (error) {
+      console.error("Error updating booked event:", error);
+      setError("Failed to update the appointment. Please try again.");
+    }
+  };
+  
   return (
     <>
       {/* Add Event Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h3 className="text-xl font-bold mb-4">Lägg till tillgänglighet</h3>
+            <h3 className="text-xl font-bold mb-4">Add availability</h3>
             <input
               type="text"
               placeholder="Titel"
@@ -303,7 +390,7 @@ function AdminSchedule() {
               }
               className="w-full p-2 border border-gray-300 rounded mb-4"
             />
-            <label className="block mb-2">Startdatum och tid:</label>
+            <label className="block mb-2">Start date and time:</label>
             <input
               type="datetime-local"
               value={moment(newEvent.start).format("YYYY-MM-DDTHH:mm")}
@@ -342,13 +429,13 @@ function AdminSchedule() {
                 onClick={() => setIsModalOpen(false)}
                 className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
               >
-                Avbryt
+                Abort
               </button>
               <button
                 onClick={handleAddEvent}
                 className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
               >
-                Lägg till
+                Add
               </button>
             </div>
           </div>
@@ -361,21 +448,21 @@ function AdminSchedule() {
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
             {selectedEvent.isBooked && selectedEvent.appointmentInfo ? (
               <>
-                <h4 className="text-lg font-semibold mb-2">Bokad tid</h4>
+                <h4 className="text-lg font-semibold mb-2">Booked time</h4>
                 <p>
-                  <strong>Patient:</strong>{" "}
+                  <strong>Caretaker:</strong>{" "}
                   {selectedEvent.appointmentInfo.patient}
                 </p>
                 <p>
-                  <strong>Vårdgivare:</strong>{" "}
+                  <strong>Caregiver:</strong>{" "}
                   {selectedEvent.appointmentInfo.caregiver}
                 </p>
                 <p>
-                  <strong>Starttid:</strong>{" "}
+                  <strong>Start time:</strong>{" "}
                   {moment(selectedEvent.start).format("YYYY-MM-DD HH:mm")}
                 </p>
                 <p>
-                  <strong>Sluttid:</strong>{" "}
+                  <strong>End time:</strong>{" "}
                   {moment(selectedEvent.end).format("YYYY-MM-DD HH:mm")}
                 </p>
                 <div className="flex justify-end mt-4">
@@ -383,13 +470,25 @@ function AdminSchedule() {
                     onClick={() => setSelectedEvent(null)}
                     className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
                   >
-                    Stäng
+                    Close
+                  </button>
+                  <button
+                    onClick={handleDeleteEvent}
+                    className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                  >
+                    Remove
+                  </button>
+                  <button
+                    onClick={handleUpdateBookedEvent}
+                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  >
+                    Change
                   </button>
                 </div>
               </>
             ) : (
               <>
-                <h3 className="text-xl font-bold mb-4">Ändra tillgänglighet</h3>
+                <h3 className="text-xl font-bold mb-4">Change availability</h3>
                 <input
                   type="text"
                   value={selectedEvent.title}
@@ -401,7 +500,7 @@ function AdminSchedule() {
                   }
                   className="w-full p-2 border border-gray-300 rounded mb-4"
                 />
-                <label className="block mb-2">Startdatum och tid:</label>
+                <label className="block mb-2">Start date and time:</label>
                 <input
                   type="datetime-local"
                   value={moment(selectedEvent.start).format("YYYY-MM-DDTHH:mm")}
@@ -414,7 +513,7 @@ function AdminSchedule() {
                   className="w-full p-2 border border-gray-300 rounded mb-4"
                   step="1800"
                 />
-                <label className="block mb-2">Slutdatum och tid:</label>
+                <label className="block mb-2">End date and time:</label>
                 <input
                   type="datetime-local"
                   value={moment(selectedEvent.end).format("YYYY-MM-DDTHH:mm")}
@@ -432,19 +531,19 @@ function AdminSchedule() {
                     onClick={() => setSelectedEvent(null)}
                     className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
                   >
-                    Avbryt
+                    Exit
                   </button>
                   <button
                     onClick={handleDeleteEvent}
                     className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
                   >
-                    Ta bort
+                    Remove
                   </button>
                   <button
                     onClick={handleUpdateEvent}
                     className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                   >
-                    Spara
+                    Save
                   </button>
                 </div>
               </>
@@ -452,6 +551,51 @@ function AdminSchedule() {
           </div>
         </div>
       )}
+ {isChangeModalOpen && (
+  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+      <h3 className="text-xl font-bold mb-4">Change Appointment Time</h3>
+      <select
+        value={selectedNewAvailability ? selectedNewAvailability.id : ""}
+        onChange={(e) => {
+          const selectedId = e.target.value;
+          const selected = availabilities.find(
+            (avail) => avail.id === Number(selectedId)
+          );
+          setSelectedNewAvailability(selected);
+        }}
+        className="w-full p-2 border border-gray-300 rounded mb-4"
+      >
+        <option value="">Select a new time slot</option>
+        {availabilities.map((avail) => (
+          <option key={avail.id} value={avail.id}>
+            {moment(avail.startTime).format("YYYY-MM-DD HH:mm")} -{" "}
+            {moment(avail.endTime).format("HH:mm")}
+          </option>
+        ))}
+      </select>
+      {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+      <div className="flex justify-end space-x-2">
+        <button
+          onClick={() => {
+            setIsChangeModalOpen(false);
+            setSelectedNewAvailability(null); // Reset selected availability
+            setError(null); // Clear any errors
+          }}
+          className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleSaveNewAppointmentTime}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+)}
       {/* Calendar Component */}
       <MyCalendar
         selectable={true}
