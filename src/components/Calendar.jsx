@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
@@ -18,6 +18,8 @@ const timeFormats = {
 
 const MyCalendar = (props) => {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [selectedWeek, setSelectedWeek] = useState(moment().week());
 
   const handleMonthChange = (event) => {
     const selectedMonth = parseInt(event.target.value, 10);
@@ -35,6 +37,13 @@ const MyCalendar = (props) => {
     setCurrentDate(newDate);
   };
 
+  const handleWeekChange = (event) => {
+    const selectedWeek = parseInt(event.target.value, 10);
+    const newDate = moment(currentDate).week(selectedWeek).toDate();
+    setCurrentDate(newDate);
+    setSelectedWeek(selectedWeek);
+  };
+
   const monthOptions = moment.months().map((month, index) => ({
     value: index,
     label: month,
@@ -46,12 +55,58 @@ const MyCalendar = (props) => {
     yearOptions.push({ value: year, label: year });
   }
 
+  const weekOptions = [];
+  for (let week = 1; week <= 52; week++) {
+    weekOptions.push({ value: week, label: `Week ${week}` });
+  }
+
+  // Update selectedWeek when currentDate changes
+  useEffect(() => {
+    setSelectedWeek(moment(currentDate).week());
+  }, [currentDate]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    // Attach the event listener
+    window.addEventListener("resize", handleResize);
+
+    // Call handleResize once to set the initial state
+    handleResize();
+
+    // Cleanup the event listener on component unmount
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
-    <div className="h-[800px] w-[80%] mx-auto mb-16">
-      <div className="flex justify-between items-center mb-5">
+    <div className={`${isMobile ? "h-[50%]" : "h-[729px]"} w-[80%] mx-auto mb-16`}>
+      <div
+        className={`flex ${
+          isMobile ? "flex-col space-y-3" : "flex-row"
+        } items-center mb-5`}
+      >
+        <div>
+          <label htmlFor="year-select" className="mr-3">
+            Choose year:
+          </label>
+          <select
+            id="year-select"
+            value={moment(currentDate).year()}
+            onChange={handleYearChange}
+            className="p-2 rounded border border-gray-300 mr-3"
+          >
+            {yearOptions.map((year) => (
+              <option key={year.value} value={year.value}>
+                {year.label}
+              </option>
+            ))}
+          </select>
+        </div>
         <div>
           <label htmlFor="month-select" className="mr-3">
-            Välj månad:
+            Choose month:
           </label>
           <select
             id="month-select"
@@ -65,26 +120,30 @@ const MyCalendar = (props) => {
               </option>
             ))}
           </select>
-
-          <label htmlFor="year-select" className="mr-3">
-            Välj år:
-          </label>
-          <select
-            id="year-select"
-            value={moment(currentDate).year()}
-            onChange={handleYearChange}
-            className="p-2 rounded border border-gray-300"
-          >
-            {yearOptions.map((year) => (
-              <option key={year.value} value={year.value}>
-                {year.label}
-              </option>
-            ))}
-          </select>
         </div>
+        {isMobile && (
+          <div>
+            <label htmlFor="week-select" className="mr-3">
+              Choose week:
+            </label>
+            <select
+              id="week-select"
+              value={selectedWeek}
+              onChange={handleWeekChange}
+              className="p-2 rounded border border-gray-300"
+            >
+              {weekOptions.map((week) => (
+                <option key={week.value} value={week.value}>
+                  {week.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       <Calendar
+        key={isMobile ? "mobile" : "desktop"} // Force re-render when isMobile changes
         localizer={localizer}
         selectable={props.selectable}
         onSelectSlot={props.onSelectSlot}
@@ -93,8 +152,8 @@ const MyCalendar = (props) => {
         events={props.events}
         startAccessor="start"
         endAccessor="end"
-        defaultView="week"
-        views={["week", "day"]}
+        defaultView={isMobile ? "day" : "week"}
+        views={isMobile ? ["day"] : ["week", "day"]}
         onNavigate={handleNavigate}
         formats={timeFormats}
         min={new Date(0, 0, 0, 8, 0, 0)}
