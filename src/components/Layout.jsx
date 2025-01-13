@@ -26,8 +26,8 @@ const Layout = ({ children }) => {
                     </Link>
 
                     {/* Burger Menu Button for Mobile */}
-                    <button 
-                        onClick={toggleMenu} 
+                    <button
+                        onClick={toggleMenu}
                         className="md:hidden text-[#057d7a] focus:outline-none"
                     >
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -77,55 +77,48 @@ const Layout = ({ children }) => {
                 </div>
 
                 {/* Mobile Dropdown Menu */}
-                <div 
-                    className={`${isMenuOpen ? 'block' : 'hidden'} md:hidden bg-white shadow-lg absolute w-full z-10`}
-                >
+                <div className={`${isMenuOpen ? 'block' : 'hidden'} md:hidden bg-white shadow-lg absolute w-full z-10`}>
                     <nav className="flex flex-col space-y-2 p-4">
                         {isAuthenticated ? (
                             <>
                                 {roles.includes("Admin") ? (
                                     <>
                                         {/* Dashboard */}
-                                        <Link 
-                                            to="/admin/dashboard" 
-                                            onClick={closeMenu} // Close menu on click
-                                            className="px-3 py-2 text-white bg-[#057d7a] rounded-lg hover:bg-[#2fadaa]"
-                                        >
+                                        <Link
+                                            to="/admin/dashboard"
+                                            onClick={closeMenu}
+                                            className="px-3 py-2 text-white bg-[#057d7a] rounded-lg hover:bg-[#2fadaa]">
                                             Dashboard
                                         </Link>
                                         {/* Admin Schedule */}
-                                        <Link 
-                                            to="/admin/schedule" 
-                                            onClick={closeMenu} // Close menu on click
-                                            className="px-3 py-2 text-white bg-[#057d7a] rounded-lg hover:bg-[#2fadaa]"
-                                        >
+                                        <Link
+                                            to="/admin/schedule"
+                                            onClick={closeMenu}
+                                            className="px-3 py-2 text-white bg-[#057d7a] rounded-lg hover:bg-[#2fadaa]">
                                             Schedule
                                         </Link>
                                     </>
                                 ) : (
                                     <>
                                         {/* Dashboard */}
-                                        <Link 
-                                            to="/user/dashboard" 
-                                            onClick={closeMenu} // Close menu on click
-                                            className="px-3 py-2 text-white bg-[#057d7a] rounded-lg hover:bg-[#2fadaa]"
-                                        >
+                                        <Link
+                                            to="/user/dashboard"
+                                            onClick={closeMenu}
+                                            className="px-3 py-2 text-white bg-[#057d7a] rounded-lg hover:bg-[#2fadaa]">
                                             Dashboard
                                         </Link>
                                         {/* Book Appointment */}
-                                        <Link 
-                                            to="/user/schedule" 
-                                            onClick={closeMenu} // Close menu on click
-                                            className="px-3 py-2 text-white bg-[#057d7a] rounded-lg hover:bg-[#2fadaa]"
-                                        >
+                                        <Link
+                                            to="/user/schedule"
+                                            onClick={closeMenu}
+                                            className="px-3 py-2 text-white bg-[#057d7a] rounded-lg hover:bg-[#2fadaa]">
                                             Book appointment
                                         </Link>
                                         {/* History */}
-                                        <Link 
-                                            to="/user/history" 
-                                            onClick={closeMenu} // Close menu on click
-                                            className="px-3 py-2 text-white bg-[#057d7a] rounded-lg hover:bg-[#2fadaa]"
-                                        >
+                                        <Link
+                                            to="/user/history"
+                                            onClick={closeMenu}
+                                            className="px-3 py-2 text-white bg-[#057d7a] rounded-lg hover:bg-[#2fadaa]">
                                             View History
                                         </Link>
                                     </>
@@ -133,11 +126,10 @@ const Layout = ({ children }) => {
                                 <Logout onClick={closeMenu} /> {/* Close menu on logout */}
                             </>
                         ) : (
-                            <Link 
-                                to="/login" 
-                                onClick={closeMenu} // Close menu on click
-                                className="px-3 py-2 text-white bg-[#057d7a] rounded-lg hover:bg-[#2fadaa]"
-                            >
+                            <Link
+                                to="/login"
+                                onClick={closeMenu}
+                                className="px-3 py-2 text-white bg-[#057d7a] rounded-lg hover:bg-[#2fadaa]">
                                 Login
                             </Link>
                         )}
