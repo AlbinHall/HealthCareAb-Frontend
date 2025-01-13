@@ -1,42 +1,16 @@
-import { useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
 import Logo from "../assets/health_care_logo.svg";
-import styled from "styled-components";
-import Logout from "./Logout";
-import { Link } from "react-router-dom";
-
-// admin page, can only visit if you have role ADMIN
-const AdminContainer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-`;
-
-const LogoContainer = styled.img`
-  height: 20rem;
-`;
-
-const Title = styled.h2`
-  font-size: 22px;
-`;
-
-const Text = styled.p`
-  font-size: 18px;
-`;
 
 function AdminDashboard() {
-  const {
-    authState: { user },
-  } = useAuth();
-  const [users, setUsers] = useState([]);
+  // using custom hook to check if the user i authenticated and has the correct role
+  const { authState: { user }, } = useAuth();
 
   return (
-    <AdminContainer>
-      <LogoContainer src={Logo} />
-      <Title>Admin Dashboard</Title>
-      <Text>Welcome, {user}!</Text>
-    </AdminContainer>
+    <div className="flex flex-col items-center justify-center p-4">
+      <img src={Logo} alt="Health Care Logo" className="h-80 mb-6" />
+      <h2 className="text-2xl font-bold mb-4">Admin Dashboard</h2>
+      <p className="text-lg mb-6">Welcome, {user}!</p>
+    </div>
   );
 }
 
