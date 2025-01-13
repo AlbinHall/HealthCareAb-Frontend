@@ -465,7 +465,7 @@ function AdminSchedule() {
                   <strong>End time:</strong>{" "}
                   {moment(selectedEvent.end).format("YYYY-MM-DD HH:mm")}
                 </p>
-                <div className="flex justify-end mt-4">
+                <div className="flex justify-end mt-4 space-x-2">
                   <button
                     onClick={() => setSelectedEvent(null)}
                     className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
