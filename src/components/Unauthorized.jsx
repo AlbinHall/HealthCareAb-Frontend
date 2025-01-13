@@ -1,43 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import styled from "styled-components";
-// unauthorized page that shows if a user tries to access a page and does
-// not have the correct role for it
-const UnauthorizedContainer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-`;
 
-const Title = styled.h2`
-  font-size: 30px;
-  color: #eb4d1b;
-`;
-
-const Text = styled.p`
-  font-size: 18px;
-`;
-
-const Button = styled.div`
-  cursor: pointer;
-  padding: 10px 30px;
-  background-color: #057d7a;
-  border-radius: 10px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #fff;
-  margin-top: 3rem;
-  transition: background-color 0.3s ease, transform 0.2s ease,
-    box-shadow 0.2s ease;
-
-  &:hover {
-    background-color: #2fadaa;
-    transform: translateY(-3px);
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
-  }
-`;
-
-function Unauthorized() {
+const Unauthorized = () => {
   const navigate = useNavigate();
 
   const goBack = () => {
@@ -45,12 +8,17 @@ function Unauthorized() {
   };
 
   return (
-    <UnauthorizedContainer>
-      <Title>Unauthorized</Title>
-      <Text>You do not have permission to view this page.</Text>
-      <Button onClick={goBack}>Go Back</Button>
-    </UnauthorizedContainer>
+    <div className="flex flex-col items-center justify-center p-4">
+      <h2 className="text-3xl font-bold text-red-500 mb-4">Unauthorized</h2>
+      <p className="text-lg mb-6">You do not have permission to view this page.</p>
+      <button
+        onClick={goBack}
+        className="px-6 py-3 bg-teal-700 text-white rounded-lg hover:bg-teal-500 transition-transform transform hover:-translate-y-1"
+      >
+        Go Back
+      </button>
+    </div>
   );
-}
+};
 
 export default Unauthorized;

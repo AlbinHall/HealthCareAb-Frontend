@@ -6,46 +6,40 @@ import "moment/locale/sv";
 
 const localizer = momentLocalizer(moment);
 
-// Custom time formats
 const timeFormats = {
-  timeGutterFormat: "HH:mm", // Time in the gutter (left side)
+  timeGutterFormat: "HH:mm",
   eventTimeRangeFormat: ({ start, end }, culture, localizer) =>
     `klockan ${localizer.format(start, "HH:mm", culture)} - ${localizer.format(
       end,
       "HH:mm",
       culture
-    )}`, // Event time range
+    )}`,
 };
 
 const MyCalendar = (props) => {
-  const [currentDate, setCurrentDate] = useState(new Date()); // State to control the current date of the calendar
+  const [currentDate, setCurrentDate] = useState(new Date());
 
-  // Function to handle month change from the dropdown
   const handleMonthChange = (event) => {
-    const selectedMonth = parseInt(event.target.value, 10); // Get the selected month (0-11)
-    const newDate = moment(currentDate).month(selectedMonth).toDate(); // Update the current date with the selected month
+    const selectedMonth = parseInt(event.target.value, 10);
+    const newDate = moment(currentDate).month(selectedMonth).toDate();
     setCurrentDate(newDate);
   };
 
-  // Function to handle year change from the dropdown
   const handleYearChange = (event) => {
-    const selectedYear = parseInt(event.target.value, 10); // Get the selected year
-    const newDate = moment(currentDate).year(selectedYear).toDate(); // Update the current date with the selected year
+    const selectedYear = parseInt(event.target.value, 10);
+    const newDate = moment(currentDate).year(selectedYear).toDate();
     setCurrentDate(newDate);
   };
 
-  // Function to handle navigation (e.g., next, previous)
   const handleNavigate = (newDate) => {
-    setCurrentDate(newDate); // Update the current date when navigating
+    setCurrentDate(newDate);
   };
 
-  // Generate month options for the dropdown
   const monthOptions = moment.months().map((month, index) => ({
     value: index,
     label: month,
   }));
 
-  // Generate year options for the dropdown (e.g., from 2020 to 2030)
   const yearOptions = [];
   const currentYear = moment().year();
   for (let year = currentYear - 5; year <= currentYear + 5; year++) {
@@ -53,30 +47,17 @@ const MyCalendar = (props) => {
   }
 
   return (
-    <div style={{ height: "800px", width: "80%", margin: "0 auto" }}>
-      {/* Header with Dropdowns and Log Out Button */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "20px",
-        }}
-      >
+    <div className="h-[800px] w-[80%] mx-auto">
+      <div className="flex justify-between items-center mb-5">
         <div>
-          <label htmlFor="month-select" style={{ marginRight: "10px" }}>
-            Välj månad:{" "}
+          <label htmlFor="month-select" className="mr-3">
+            Välj månad:
           </label>
           <select
             id="month-select"
-            value={moment(currentDate).month()} // Set the selected month based on currentDate
+            value={moment(currentDate).month()}
             onChange={handleMonthChange}
-            style={{
-              padding: "5px",
-              borderRadius: "5px",
-              border: "1px solid #ccc",
-              marginRight: "10px",
-            }}
+            className="p-2 rounded border border-gray-300 mr-3"
           >
             {monthOptions.map((month) => (
               <option key={month.value} value={month.value}>
@@ -85,18 +66,14 @@ const MyCalendar = (props) => {
             ))}
           </select>
 
-          <label htmlFor="year-select" style={{ marginRight: "10px" }}>
-            Välj år:{" "}
+          <label htmlFor="year-select" className="mr-3">
+            Välj år:
           </label>
           <select
             id="year-select"
-            value={moment(currentDate).year()} // Set the selected year based on currentDate
+            value={moment(currentDate).year()}
             onChange={handleYearChange}
-            style={{
-              padding: "5px",
-              borderRadius: "5px",
-              border: "1px solid #ccc",
-            }}
+            className="p-2 rounded border border-gray-300"
           >
             {yearOptions.map((year) => (
               <option key={year.value} value={year.value}>
@@ -107,7 +84,6 @@ const MyCalendar = (props) => {
         </div>
       </div>
 
-      {/* Calendar Component */}
       <Calendar
         localizer={localizer}
         selectable={props.selectable}
@@ -119,11 +95,11 @@ const MyCalendar = (props) => {
         endAccessor="end"
         defaultView="week"
         views={["week", "day"]}
-        onNavigate={handleNavigate} // Handle navigation (next, previous)
-        formats={timeFormats} // Use custom time formats
-        min={new Date(0, 0, 0, 8, 0, 0)} // Set minimum time to 08:00
-        max={new Date(0, 0, 0, 16, 0, 0)} // Set maximum time to 16:00
-        date={currentDate} // Control the currently displayed date
+        onNavigate={handleNavigate}
+        formats={timeFormats}
+        min={new Date(0, 0, 0, 8, 0, 0)}
+        max={new Date(0, 0, 0, 16, 0, 0)}
+        date={currentDate}
         messages={{
           today: "Idag",
           previous: "Föregående",
@@ -135,7 +111,8 @@ const MyCalendar = (props) => {
           date: "Datum",
           time: "Tid",
           event: "Händelse",
-        }} // Customize calendar messages in Swedish
+        }}
+        className="shadow-md rounded-lg"
       />
     </div>
   );
