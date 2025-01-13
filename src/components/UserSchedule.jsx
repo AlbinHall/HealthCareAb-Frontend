@@ -90,7 +90,6 @@ const UserSchedule = () => {
       setBookingCompleted(true);
       setErrorMessage("");
       setShowModal(false);
-      setSelectedCaregiverId(null);
     } catch (error) {
       console.error("Error creating appointment:", error);
       if (error.response) {
@@ -116,6 +115,12 @@ const UserSchedule = () => {
     setShowNoSlotsModal(false);
     setShowModal(false);
     navigate("/user/dashboard", { replace: true });
+  };
+
+  const handleConfirmClick = () => {
+    setIsBookedModal(false);
+    setSelectedCaregiverId(null);
+    setErrorMessage("");
   };
 
   const eventStyleGetter = (event) => {
@@ -225,27 +230,40 @@ const UserSchedule = () => {
         )}
       </div>
       <div>
-        {isBookedModal && (
+        {isBookedModal && selectedCaregiverId && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
             <div className="p-6 rounded-lg shadow-lg w-96 bg-gray-100">
               <h2 className="mb-2">
                 Bekräftelse av tidsbokning för{" "}
                 <span className="font-bold">{user}</span>
               </h2>
-              Tid:{" "}
-              <span className="font-bold text-red-600">
-                {format(selectedSlot.start, "HH:mm")} -{" "}
-                {format(selectedSlot.end, "HH:mm")}
-              </span>
+              <p>
+                Läkare:{" "}
+                <span className="font-bold">
+                  {
+                    selectedSlot.caregivers.find(
+                      (caregiver) =>
+                        caregiver.id === Number(selectedCaregiverId)
+                    )?.name
+                  }
+                </span>
+              </p>
+              <p>
+                Tid:{" "}
+                <span className="font-bold">
+                  {format(selectedSlot.start, "HH:mm")} -{" "}
+                  {format(selectedSlot.end, "HH:mm")}
+                </span>
+              </p>
               <p>
                 Datum:{" "}
-                <span className="font-bold text-red-600">
+                <span className="font-bold">
                   {format(selectedSlot.start, "yy-MM-dd")}
                 </span>
               </p>
               <div className="flex justify-end space-x-2">
                 <button
-                  onClick={() => setIsBookedModal(false)}
+                  onClick={handleConfirmClick}
                   className="px-4 py-2 m-2 text-white bg-[#057d7a] rounded hover:bg-[#2fadaa]"
                 >
                   Okej!
