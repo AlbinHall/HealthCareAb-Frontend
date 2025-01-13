@@ -429,7 +429,7 @@ function AdminSchedule() {
                 onClick={() => setIsModalOpen(false)}
                 className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
               >
-                Abort
+                Cancel
               </button>
               <button
                 onClick={handleAddEvent}
@@ -531,7 +531,7 @@ function AdminSchedule() {
                     onClick={() => setSelectedEvent(null)}
                     className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
                   >
-                    Exit
+                    Cancel
                   </button>
                   <button
                     onClick={handleDeleteEvent}
