@@ -1,64 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
-import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 
 const apiUrl = import.meta.env.VITE_API_BASE_URL;
-
-const RegisterContainer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-`;
-
-const RegisterButton = styled.button`
-  cursor: pointer;
-  padding: 10px 30px;
-  background-color: #057d7a;
-  border-radius: 10px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #fff;
-  margin-top: 40px;
-  transition: background-color 0.3s ease, transform 0.2s ease,
-    box-shadow 0.2s ease;
-  text-align: center;
-  border: none;
-
-  &:hover {
-    background-color: #2fadaa;
-    transform: translateY(-3px);
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
-  }
-`;
-
-const Title = styled.h2`
-  font-size: 22px;
-`;
-
-const FormWrapper = styled.form`
-  padding: 40px;
-  display: flex;
-  flex-direction: column;
-  background-color: #ffffff;
-  border-radius: 15px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-  width: 350px;
-  gap: 10px;
-`;
-
-const StyledInput = styled.input`
-  font-size: 16px;
-  border: 1px solid #ddd;
-  background-color: #fafafa;
-  border-radius: 5px;
-  padding: 5px 0px;
-
-  &:focus {
-    outline: none;
-  }
-`;
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -82,13 +26,11 @@ const Register = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
 
-    // Check if passwords match
     if (formData.password !== formData.confirmPassword) {
       setErrorMessage("Passwords do not match");
       return;
     }
 
-    // Validate password strength
     if (
       !/\d/.test(formData.password) ||
       !/[A-Z]/.test(formData.password) ||
@@ -125,39 +67,50 @@ const Register = () => {
   };
 
   return (
-    <RegisterContainer>
-      <Title>Register</Title>
-      {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
-      {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
-      <FormWrapper onSubmit={handleRegister}>
-        <label>Username: </label>
-        <StyledInput
+    <div className="flex flex-col items-center justify-center p-4">
+      <h2 className="text-2xl font-bold mb-4">Register</h2>
+      {successMessage && <p className="text-green-500">{successMessage}</p>}
+      {errorMessage && <p className="text-red-500">{errorMessage}</p>}
+      <form
+        onSubmit={handleRegister}
+        className="flex flex-col p-6 bg-white rounded-lg shadow-md w-80 gap-4"
+      >
+        <label className="font-medium">Username:</label>
+        <input
           autoFocus
           name="username"
           type="text"
           value={formData.username}
           onChange={handleInputChange}
           required
+          className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-teal-500"
         />
-        <label>Password: </label>
-        <StyledInput
+        <label className="font-medium">Password:</label>
+        <input
           name="password"
           type="password"
           value={formData.password}
           onChange={handleInputChange}
           required
+          className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-teal-500"
         />
-        <label>Confirm password: </label>
-        <StyledInput
+        <label className="font-medium">Confirm Password:</label>
+        <input
           name="confirmPassword"
           type="password"
           value={formData.confirmPassword}
           onChange={handleInputChange}
           required
+          className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-teal-500"
         />
-        <RegisterButton type="submit">Register</RegisterButton>
-      </FormWrapper>
-    </RegisterContainer>
+        <button
+          type="submit"
+          className="px-4 py-2 bg-teal-700 text-white rounded-lg hover:bg-teal-500 transition-transform transform hover:-translate-y-1"
+        >
+          Register
+        </button>
+      </form>
+    </div>
   );
 };
 
