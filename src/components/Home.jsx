@@ -41,11 +41,7 @@ const Home = () => (
     <HomeContainer>
       <LogoContainer src={Logo} />
       <Title>Health Care Appointment App</Title>
-      <LoginButton>
-        <Link className="link" to="/login">
-          Login
-        </Link>
-      </LoginButton>
+      <h2>VISA REVIEWS HÄR?</h2>
     </HomeContainer>
   </>
 );

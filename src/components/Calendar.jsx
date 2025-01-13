@@ -53,7 +53,7 @@ const MyCalendar = (props) => {
   }
 
   return (
-    <div style={{ height: "800px", width: "80%", margin: "0 auto" }}>
+    <div style={{ height: "800px", width: "80%", margin: "0 auto", marginBottom: "4rem"}}>
       {/* Header with Dropdowns and Log Out Button */}
       <div
         style={{
