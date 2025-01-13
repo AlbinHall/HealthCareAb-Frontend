@@ -20,17 +20,19 @@ const UserSchedule = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [showNoSlotsModal, setShowNoSlotsModal] = useState(false);
+  const [selectedCaregiverId, setSelectedCaregiverId] = useState(null);
 
   useEffect(() => {
     const fetchSlots = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/Availability/getavailableslots`,
+          `${API_BASE_URL}/Availability/getuniqueslots`,
           {
             withCredentials: true,
           }
         );
-        const availableSlots = response.data.filter((slot) => !slot.isBooked);
+
+        const availableSlots = response.data;
 
         if (availableSlots.length === 0) {
           setShowNoSlotsModal(true);
@@ -42,6 +44,7 @@ const UserSchedule = () => {
           start: new Date(slot.startTime),
           end: new Date(slot.endTime),
           caregiverId: slot.caregiverId,
+          caregivers: slot.caregivers,
           color: "#057d7a",
         }));
 
@@ -64,14 +67,19 @@ const UserSchedule = () => {
   };
 
   const handleSubmit = async () => {
+    if (!selectedCaregiverId) {
+      setErrorMessage("Du måste välja en läkare.");
+      return;
+    }
+
     const appointmentData = {
       patientId: userId,
-      caregiverId: selectedSlot.caregiverId,
+      caregiverId: selectedCaregiverId,
       appointmentTime: selectedSlot.start,
     };
 
     try {
-      const response = await axios.post(
+      await axios.post(
         `${API_BASE_URL}/Appointment/createappointment`,
         appointmentData,
         {
@@ -97,10 +105,22 @@ const UserSchedule = () => {
     }
   };
 
+  const handleAbort = () => {
+    setShowModal(false);
+    setSelectedCaregiverId(null);
+    setErrorMessage("");
+  };
+
   const handleNoSlots = () => {
     setShowNoSlotsModal(false);
     setShowModal(false);
     navigate("/user/dashboard", { replace: true });
+  };
+
+  const handleConfirmClick = () => {
+    setIsBookedModal(false);
+    setSelectedCaregiverId(null);
+    setErrorMessage("");
   };
 
   const eventStyleGetter = (event) => {
@@ -156,19 +176,44 @@ const UserSchedule = () => {
                 Bokning avser <span className="font-bold">{user}</span>
               </h2>
               Tid:{" "}
-              <span className="font-bold text-red-600">
+              <span className="font-bold">
                 {format(selectedSlot.start, "HH:mm")} -{" "}
                 {format(selectedSlot.end, "HH:mm")}
               </span>
               <p>
                 Datum:{" "}
-                <span className="font-bold text-red-600">
+                <span className="font-bold">
                   {format(selectedSlot.start, "yy-MM-dd")}
                 </span>
               </p>
+              <div className="mt-5 space-x-2">
+                {!selectedCaregiverId && (
+                  <p className="text-red-600">{errorMessage}</p>
+                )}
+                <p className="mb-2">
+                  Välj läkare: (
+                  {selectedSlot.caregivers.length > 1
+                    ? `${selectedSlot.caregivers.length} tillgängliga`
+                    : `${selectedSlot.caregivers.length} tillgänglig`}
+                  )
+                </p>
+                <select
+                  className="w-full p-2 border rounded"
+                  onChange={(e) =>
+                    setSelectedCaregiverId(Number(e.target.value))
+                  }
+                >
+                  <option value="">Välj här</option>
+                  {selectedSlot.caregivers.map((caregiver) => (
+                    <option key={caregiver.id} value={caregiver.id}>
+                      {caregiver.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <div className="flex justify-end space-x-2">
                 <button
-                  onClick={() => setShowModal(false)}
+                  onClick={handleAbort}
                   className="px-4 py-2 m-2 bg-gray-500 text-white rounded hover:bg-gray-600"
                 >
                   Avbryt
@@ -185,27 +230,40 @@ const UserSchedule = () => {
         )}
       </div>
       <div>
-        {isBookedModal && (
+        {isBookedModal && selectedCaregiverId && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
             <div className="p-6 rounded-lg shadow-lg w-96 bg-gray-100">
               <h2 className="mb-2">
                 Bekräftelse av tidsbokning för{" "}
                 <span className="font-bold">{user}</span>
               </h2>
-              Tid:{" "}
-              <span className="font-bold text-red-600">
-                {format(selectedSlot.start, "HH:mm")} -{" "}
-                {format(selectedSlot.end, "HH:mm")}
-              </span>
+              <p>
+                Läkare:{" "}
+                <span className="font-bold">
+                  {
+                    selectedSlot.caregivers.find(
+                      (caregiver) =>
+                        caregiver.id === Number(selectedCaregiverId)
+                    )?.name
+                  }
+                </span>
+              </p>
+              <p>
+                Tid:{" "}
+                <span className="font-bold">
+                  {format(selectedSlot.start, "HH:mm")} -{" "}
+                  {format(selectedSlot.end, "HH:mm")}
+                </span>
+              </p>
               <p>
                 Datum:{" "}
-                <span className="font-bold text-red-600">
+                <span className="font-bold">
                   {format(selectedSlot.start, "yy-MM-dd")}
                 </span>
               </p>
               <div className="flex justify-end space-x-2">
                 <button
-                  onClick={() => setIsBookedModal(false)}
+                  onClick={handleConfirmClick}
                   className="px-4 py-2 m-2 text-white bg-[#057d7a] rounded hover:bg-[#2fadaa]"
                 >
                   Okej!
