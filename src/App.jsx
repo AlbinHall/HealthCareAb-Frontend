@@ -11,7 +11,6 @@ import AdminDashboard from "./components/AdminDashboard";
 import Unauthorized from "./components/Unauthorized";
 import Home from "./components/Home";
 import RequireAuth from "./components/RequireAuth";
-import GlobalStyle from "./styles/GlobalStyle";
 import Register from "./components/Register";
 import "./styles/Global.css";
 import AdminSchedule from "./components/AdminSchedule";
@@ -22,7 +21,6 @@ import Layout from "./components/Layout";
 function App() {
   return (
     <AuthProvider>
-      <GlobalStyle />
       <Router>
         <Layout>
             <Routes>
