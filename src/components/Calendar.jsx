@@ -81,7 +81,7 @@ const MyCalendar = (props) => {
   }, []);
 
   return (
-    <div className={`${isMobile ? "h-[50%]" : "h-[729px]"} w-[80%] mx-auto mb-16`}>
+    <div className={`${isMobile ? "h-[50%]" : "h-[740px]"} w-[80%] mx-auto mb-16 mt-4`}>
       <div
         className={`flex ${
           isMobile ? "flex-col space-y-3" : "flex-row"
