@@ -6,6 +6,9 @@ const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
 const Register = () => {
   const [formData, setFormData] = useState({
+    firstname: "",
+    lastname: "",
+    email: "",
     username: "",
     password: "",
     confirmPassword: "",
@@ -46,6 +49,9 @@ const Register = () => {
       const payload = {
         username: formData.username,
         password: formData.password,
+        firstname: formData.firstname,
+        lastname: formData.lastname,
+        email: formData.email,
       };
 
       const response = await axios.post(`${apiUrl}/auth/register`, payload);
@@ -81,6 +87,36 @@ const Register = () => {
           name="username"
           type="text"
           value={formData.username}
+          onChange={handleInputChange}
+          required
+          className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-teal-500"
+        />
+        <label className="font-medium">First name:</label>
+        <input
+          autoFocus
+          name="firstname"
+          type="text"
+          value={formData.firstname}
+          onChange={handleInputChange}
+          required
+          className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-teal-500"
+        />
+        <label className="font-medium">Last name:</label>
+        <input
+          autoFocus
+          name="lastname"
+          type="text"
+          value={formData.lastname}
+          onChange={handleInputChange}
+          required
+          className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-teal-500"
+        />
+        <label className="font-medium">Email:</label>
+        <input
+          autoFocus
+          name="email"
+          type="text"
+          value={formData.email}
           onChange={handleInputChange}
           required
           className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-teal-500"
