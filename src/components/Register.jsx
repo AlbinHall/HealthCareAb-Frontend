@@ -90,6 +90,7 @@ const Register = () => {
           onChange={handleInputChange}
           required
           className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-teal-500"
+          autoComplete="username"
         />
         <label className="font-medium">First name:</label>
         <input
@@ -120,6 +121,7 @@ const Register = () => {
           onChange={handleInputChange}
           required
           className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-teal-500"
+          autoComplete="email"
         />
         <label className="font-medium">Password:</label>
         <input
