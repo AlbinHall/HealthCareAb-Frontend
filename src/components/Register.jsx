@@ -20,11 +20,18 @@ const Register = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+
+    // Prevent numbers & symbols in firstname and lastname
+    if (name === 'firstname' || name === 'lastname') {
+      const lettersOnly = value.replace(/[^A-Za-zåäöÅÄÖ]/g, '');
+      setFormData({ ...formData, [name]: lettersOnly });
+    } 
+    else 
+    {
+      setFormData({ ...formData, [name]: value });
+    }
   };
+
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -116,7 +123,7 @@ const Register = () => {
         <input
           autoFocus
           name="email"
-          type="text"
+          type="email"
           value={formData.email}
           onChange={handleInputChange}
           required
