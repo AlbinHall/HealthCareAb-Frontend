@@ -206,7 +206,7 @@ const UserSchedule = () => {
                   <option value="">Välj här</option>
                   {selectedSlot.caregivers.map((caregiver) => (
                     <option key={caregiver.id} value={caregiver.id}>
-                      {caregiver.name} {caregiver.lastname}
+                      {caregiver.name}
                     </option>
                   ))}
                 </select>
@@ -235,7 +235,7 @@ const UserSchedule = () => {
             <div className="p-6 rounded-lg shadow-lg w-96 bg-gray-100">
               <h2 className="mb-2">
                 Bekräftelse av tidsbokning för{" "}
-                <span className="font-bold">{user}</span>
+                <span className="font-bold">{firstname} {lastname}</span>
               </h2>
               <p>
                 Läkare:{" "}
