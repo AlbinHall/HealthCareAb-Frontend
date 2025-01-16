@@ -157,12 +157,16 @@ function AdminSchedule() {
             patient: appointmentInfo.patient.firstname + " " + appointmentInfo.patient.lastname,
             caregiver: appointmentInfo.caregiver.firstname + " " + appointmentInfo.caregiver.lastname,
           },
+          appointmentStatus: appointmentInfo.Status || "Scheduled",
         });
       } catch (error) {
         setError("Kunde inte hämta bokningsinformation. Vänligen försök igen.");
       }
     } else {
-      setSelectedEvent(event);
+      setSelectedEvent({
+        ...event,
+        appointmentStatus: "Scheduled", 
+      });
     }
   };
 
@@ -332,6 +336,59 @@ function AdminSchedule() {
       console.error("Error fetching availabilities:", error);
     }
   };
+  const handleUpdateAppointmentStatus = async () => {
+    if (!selectedEvent || !selectedEvent.appointmentId) {
+      console.error("No selected event or appointment ID found.");
+      return;
+    }
+  
+    // Map the frontend status to the backend enum values
+    const statusMap = {
+      Scheduled: 0,
+      Completed: 1,
+      Cancelled: 2,
+    };
+  
+    const payload = {
+      AppointmentId: selectedEvent.appointmentId,
+      caregiverid: authState.userId, // Assuming caregiverid is the same as the authenticated user's ID
+      newavailabilityid: selectedEvent.id, // Use the current event's ID as the new availability ID
+      oldavailabilityid: selectedEvent.id, // Use the current event's ID as the old availability ID
+      appointmenttime: selectedEvent.start.toISOString(), // Ensure this is in ISO format
+      Status: statusMap[selectedEvent.appointmentStatus], // Map to the correct integer value
+    };
+  
+    console.log("Payload being sent:", payload); // Debugging
+  
+    try {
+      const response = await axios.put(
+        `${API_BASE_URL}/appointment/updateappointment`,
+        payload,
+        {
+          withCredentials: true,
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error updating appointment status:", error);
+      if (error.response) {
+        console.error("Backend response:", error.response.data); // Log the backend's error message
+      }
+      throw error;
+    }
+  };
+  const handleSaveAndClose = async () => {
+    try {
+      // Save the appointment status
+      await handleUpdateAppointmentStatus();
+  
+      // Close the modal
+      setSelectedEvent(null);
+    } catch (error) {
+      console.error("Error saving and closing:", error);
+      setError("Failed to save the appointment status. Please try again.");
+    }
+  };
   
   const handleSaveNewAppointmentTime = async () => {
     if (!selectedNewAvailability || !selectedEvent) {
@@ -373,6 +430,13 @@ function AdminSchedule() {
       setError("Failed to update the appointment. Please try again.");
     }
   };
+
+  const statusMap = {
+    0: "Scheduled",
+    1: "Completed",
+    2: "Cancelled",
+  };
+  
   
   return (
     <>
@@ -445,7 +509,7 @@ function AdminSchedule() {
       {/* Edit Event Modal */}
       {selectedEvent && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+          <div className="bg-white p-9 rounded-lg shadow-lg w-120">
             {selectedEvent.isBooked && selectedEvent.appointmentInfo ? (
               <>
                 <h4 className="text-lg font-semibold mb-2">Booked time</h4>
@@ -467,10 +531,10 @@ function AdminSchedule() {
                 </p>
                 <div className="flex justify-end mt-4">
                   <button
-                    onClick={() => setSelectedEvent(null)}
-                    className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                    onClick={handleSaveAndClose} // Save and close
+                    className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
                   >
-                    Close
+                    Save and Close
                   </button>
                   <button
                     onClick={handleDeleteEvent}
@@ -484,6 +548,22 @@ function AdminSchedule() {
                   >
                     Change
                   </button>
+            <div className="relative inline-block text-left">
+              <select
+                value={statusMap[selectedEvent.appointmentStatus]} // Map the integer status to a string
+                onChange={(e) =>
+                  setSelectedEvent({
+                    ...selectedEvent,
+                    appointmentStatus: e.target.value, // Update the status in the state
+                  })
+                }
+                className="block w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="Scheduled">Scheduled</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
                 </div>
               </>
             ) : (
@@ -600,9 +680,9 @@ function AdminSchedule() {
       <MyCalendar
         selectable={true}
         onSelectSlot={handleSelectSlot}
-        onSelectEvent={handleSelectEvent} // Ensure this is correctly wired
+        onSelectEvent={handleSelectEvent}
         events={events}
-        eventPropGetter={eventPropGetter} // Pass the eventPropGetter function here
+        eventPropGetter={eventPropGetter} 
       />
     </>
   );
