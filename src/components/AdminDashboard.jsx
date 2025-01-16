@@ -35,6 +35,19 @@ const getAppointmentById = async (appointmentId) => {
   }
 };
 
+const getfeedbackbyuserid = async (authState) => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/feedback/SummaryByCaregiverId/${authState.userId}`,
+      { withCredentials: true }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching feedback:", error);
+    throw error;
+  }
+};
+
 const isDateInCurrentWeek = (date) => {
   const now = new Date();
   const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
@@ -47,8 +60,11 @@ function AdminDashboard() {
   const { authState } = useAuth();
   const [appointments, setAppointments] = useState([]);
   const [availabilities, setAvailabilities] = useState([]);
-  const rating = 3;
-  const progress = (rating / 5) * 100;
+  const [feedbackSummary, setFeedbackSummary] = useState({
+    averageRating: 0,
+    commentsByRating: {},
+  }); // Initialize with default values
+  const [showComments, setShowComments] = useState(false);
 
   useEffect(() => {
     if (authState.userId) {
@@ -70,53 +86,65 @@ function AdminDashboard() {
           });
 
           Promise.all(fetchAppointments)
-          .then((appointments) => {
-            console.log("Fetched Appointments: ", appointments);
-            setAppointments(appointments);
-          })
-          .catch((error) => {
-            console.error("Error fetching appointments:", error);
-          });
+            .then((appointments) => {
+              console.log("Fetched Appointments: ", appointments);
+              setAppointments(appointments);
+            })
+            .catch((error) => {
+              console.error("Error fetching appointments:", error);
+            });
         })
         .catch((error) => {
           console.error("Error fetching availability:", error);
         });
+
+      // Fetch feedback summary for the caregiver
+      getfeedbackbyuserid(authState)
+        .then((data) => {
+          console.log("Fetched Feedback Summary: ", data);
+          setFeedbackSummary(data);
+        })
+        .catch((error) => {
+          console.error("Error fetching feedback summary:", error);
+        });
     }
   }, [authState]);
+
+  // Calculate progress for the rating circle
+  const progress = (feedbackSummary.averageRating / 5) * 100;
 
   return (
     <div className="flex flex-col items-center justify-center p-4">
       <img src={Logo} alt="Health Care Logo" className="h-80 mb-6" />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
-
-        {/* Card 1 */}
+        {/* Card 1: Appointments */}
         <div className="bg-white shadow-lg rounded-lg p-4">
           <h3 className="text-xl font-semibold mb-1">Your Appointments</h3>
-          <ul className="text-gray-600 mt-4 max-h-64 overflow-y-auto">
-          {appointments.length > 0 ? (
-  appointments.map((appointment, index) => (
-    <li key={index} className="mb-1 p-1 bg-gray-100 rounded-lg">
-      <span className="font-medium">
-        {appointment.patient.username} - {appointment.caregiver.username}
-      </span>
-      <span className="block text-sm">
-        {new Date(appointment.dateTime).toLocaleString()}
-      </span>
-      <span className="block text-sm">
-        Status: {appointment.status === 0 ? "Scheduled" : "Other"}
-      </span>
-    </li>
-  ))
-) : (
-  <li className="text-gray-500">No appointments for this week.</li>
-)}
+          <ul className="text-gray-600 mt-4 max-h-80 overflow-y-auto">
+            {appointments.length > 0 ? (
+              appointments.map((appointment, index) => (
+                <li key={index} className="mb-1 p-1 bg-gray-100 rounded-lg">
+                  <span className="font-medium">
+                    {appointment.patient.username} - {appointment.caregiver.username}
+                  </span>
+                  <span className="block text-sm">
+                    {new Date(appointment.dateTime).toLocaleString()}
+                  </span>
+                  <span className="block text-sm">
+                    Status: {appointment.status === 0 ? "Scheduled" : "Other"}
+                  </span>
+                </li>
+              ))
+            ) : (
+              <li className="text-gray-500">No appointments for this week.</li>
+            )}
           </ul>
         </div>
 
-        {/* Card 2 */}
+        {/* Card 2: Availabilities */}
         <div className="bg-white shadow-lg rounded-lg p-4 hover:shadow-xl transition-shadow duration-300">
           <h3 className="text-xl font-semibold mb-1">This Week Availabilities</h3>
-          <ul className="text-gray-600 max-h-64 overflow-y-auto">
+          <ul className="text-gray-600 max-h-80 overflow-y-auto">
             {availabilities.length > 0 ? (
               availabilities.map((availability, index) => (
                 <li key={index} className="mb-1 p-2 bg-gray-100 rounded-lg">
@@ -124,7 +152,8 @@ function AdminDashboard() {
                     {new Date(availability.startTime).toLocaleDateString()}
                   </span>
                   <span className="block text-sm">
-                    {new Date(availability.startTime).toLocaleTimeString()} - {new Date(availability.endTime).toLocaleTimeString()}
+                    {new Date(availability.startTime).toLocaleTimeString()} -{" "}
+                    {new Date(availability.endTime).toLocaleTimeString()}
                   </span>
                 </li>
               ))
@@ -134,39 +163,74 @@ function AdminDashboard() {
           </ul>
         </div>
 
-        {/* Card 3 */}
-        <div className="bg-white shadow-lg rounded-lg p-8 flex flex-col items-center">
+        <div className="bg-white shadow-lg rounded-lg p-4">
           <h3 className="text-xl font-semibold mb-4">Your Personal Rating</h3>
-          <div className="relative flex items-center justify-center">
-            <svg className="w-40 h-40" viewBox="0 0 36 36">
-              {/* Background circle */}
-              <circle
-                className="text-gray-200"
-                strokeWidth="4.5"
-                stroke="currentColor"
-                fill="none"
-                cx="18"
-                cy="18"
-                r="15.915"
-              />
-              {/* Filled circle */}
-              <circle
-                className="text-blue-500 progress-circle"
-                strokeWidth="4.5"
-                strokeDasharray={`${progress}, 100`}
-                strokeDashoffset="0"
-                strokeLinecap="round"
-                stroke="currentColor"
-                fill="none"
-                cx="18"
-                cy="18"
-                r="15.915"
-              />
-            </svg>
-            {/* Text in the center */}
-            <p className="absolute text-xl font-bold text-gray-800">
-              {rating}/5
-            </p>
+          <div className="flex flex-col items-center">
+            {/* Rating Circle */}
+            <div className="relative flex items-center justify-center w-32 h-32">
+              <svg viewBox="0 0 36 36">
+                {/* Background circle */}
+                <circle
+                  className="text-gray-200"
+                  strokeWidth="3"
+                  stroke="currentColor"
+                  fill="none"
+                  cx="18"
+                  cy="18"
+                  r="15"
+                />
+                {/* Filled circle */}
+                <circle
+                  className="text-blue-500 progress-circle"
+                  strokeWidth="3"
+                  strokeDasharray={`${progress}, 100`}
+                  strokeDashoffset="0"
+                  strokeLinecap="round"
+                  stroke="currentColor"
+                  fill="none"
+                  cx="18"
+                  cy="18"
+                  r="15"
+                />
+              </svg>
+              {/* Text in the center */}
+              <p className="absolute text-lg font-bold text-gray-800">
+                {feedbackSummary.averageRating.toFixed(1)}/5
+              </p>
+            </div>
+
+            {/* Comments Section */}
+            <div className="mt-4 w-full">
+              <h4 className="text-lg font-semibold mb-2">Comments</h4>
+              <div
+                className={`border border-gray-200 rounded-lg p-2 ${
+                  showComments ? 'max-h-full' : 'max-h-24 overflow-y-hidden'
+                }`}
+              >
+                <ul className="text-gray-600">
+                  {Object.entries(feedbackSummary.commentsByRating).map(
+                    ([rating, comments], index) => (
+                      <li key={index} className="mb-2">
+                        <span className="font-medium">Rating: {rating}</span>
+                        <ul className="ml-4">
+                          {comments.map((comment, idx) => (
+                            <li key={idx} className="text-sm">
+                              {comment}
+                            </li>
+                          ))}
+                        </ul>
+                      </li>
+                    )
+                  )}
+                </ul>
+              </div>
+              <button
+                className="text-blue-500 mt-2"
+                onClick={() => setShowComments(!showComments)}
+              >
+                {showComments ? "View Less" : "View More"}
+              </button>
+            </div>
           </div>
         </div>
       </div>
