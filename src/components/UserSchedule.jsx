@@ -9,7 +9,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const UserSchedule = () => {
   const {
-    authState: { user, userId },
+    authState: { userId, firstname, lastname },
   } = useAuth();
   const navigate = useNavigate();
   const [slots, setSlots] = useState([]);
@@ -173,7 +173,7 @@ const UserSchedule = () => {
               style={{ backgroundColor: "#fff" }}
             >
               <h2 className="mb-2">
-                Bokning avser <span className="font-bold">{user}</span>
+                Bokning avser <span className="font-bold">{firstname} {lastname}</span>
               </h2>
               Tid:{" "}
               <span className="font-bold">
@@ -235,7 +235,7 @@ const UserSchedule = () => {
             <div className="p-6 rounded-lg shadow-lg w-96 bg-gray-100">
               <h2 className="mb-2">
                 Bekräftelse av tidsbokning för{" "}
-                <span className="font-bold">{user}</span>
+                <span className="font-bold">{firstname} {lastname}</span>
               </h2>
               <p>
                 Läkare:{" "}
