@@ -70,10 +70,12 @@ function AdminDashboard() {
     if (authState.userId) {
       getAvailability(authState)
         .then((data) => {
-          const currentWeekAvailabilities = data.filter((availability) => {
-            const startTime = new Date(availability.startTime);
-            return isDateInCurrentWeek(startTime) && !availability.isBooked;
-          }).slice(0, 20);
+          const currentWeekAvailabilities = data
+            .filter((availability) => {
+              const startTime = new Date(availability.startTime);
+              return isDateInCurrentWeek(startTime) && !availability.isBooked;
+            })
+            .slice(0, 20);
           setAvailabilities(currentWeekAvailabilities);
 
           const bookedAvailabilities = data.filter((availability) => {
@@ -125,7 +127,8 @@ function AdminDashboard() {
               appointments.map((appointment, index) => (
                 <li key={index} className="mb-1 p-1 bg-gray-100 rounded-lg">
                   <span className="font-medium">
-                    {appointment.patient.username} - {appointment.caregiver.username}
+                    {appointment.patient.username} -{" "}
+                    {appointment.caregiver.username}
                   </span>
                   <span className="block text-sm">
                     {new Date(appointment.dateTime).toLocaleString()}
@@ -143,7 +146,9 @@ function AdminDashboard() {
 
         {/* Card 2: Availabilities */}
         <div className="bg-white shadow-lg rounded-lg p-4 hover:shadow-xl transition-shadow duration-300">
-          <h3 className="text-xl font-semibold mb-1">This Week Availabilities</h3>
+          <h3 className="text-xl font-semibold mb-1">
+            This Week Availabilities
+          </h3>
           <ul className="text-gray-600 max-h-80 overflow-y-auto">
             {availabilities.length > 0 ? (
               availabilities.map((availability, index) => (
@@ -204,7 +209,7 @@ function AdminDashboard() {
               <h4 className="text-lg font-semibold mb-2">Comments</h4>
               <div
                 className={`border border-gray-200 rounded-lg p-2 ${
-                  showComments ? 'max-h-full' : 'max-h-24 overflow-y-hidden'
+                  showComments ? "max-h-full" : "max-h-24 overflow-y-hidden"
                 }`}
               >
                 <ul className="text-gray-600">
@@ -252,6 +257,7 @@ function AdminDashboard() {
           }
         `}
       </style>
+    </div>
   );
 }
 
