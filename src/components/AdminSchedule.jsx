@@ -168,7 +168,7 @@ function AdminSchedule() {
 
   const eventPropGetter = (event) => {
     const style = {
-      backgroundColor: event.isBooked ? "green" : "#057d7a",
+      backgroundColor: event.isBooked ? "#057d7a" : "darkgray",
       color: "white",
       borderRadius: "5px",
       border: "none",
