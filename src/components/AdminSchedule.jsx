@@ -157,19 +157,25 @@ function AdminSchedule() {
             patient: appointmentInfo.patient.firstname + " " + appointmentInfo.patient.lastname,
             caregiver: appointmentInfo.caregiver.firstname + " " + appointmentInfo.caregiver.lastname,
           },
-          appointmentStatus: appointmentInfo.Status || "Scheduled",
+          appointmentStatus: statusMap[appointmentInfo.Status], // Map integer to string status
         });
       } catch (error) {
-        setError("Kunde inte hämta bokningsinformation. Vänligen försök igen.");
+        setError("Failed to fetch booking information. Please try again.");
       }
     } else {
       setSelectedEvent({
         ...event,
-        appointmentStatus: "Scheduled", 
+        appointmentStatus: "Scheduled", // Default status for non-booked events
       });
     }
+  
+    console.log("Selected Event:", event); // Debug log
   };
-
+  useEffect(() => {
+    console.log("Selected Event Updated:", selectedEvent); // Debug log
+  }, [selectedEvent]);
+  
+  
   const eventPropGetter = (event) => {
     const style = {
       backgroundColor: event.isBooked ? "green" : "#057d7a",
@@ -336,6 +342,7 @@ function AdminSchedule() {
       console.error("Error fetching availabilities:", error);
     }
   };
+
   const handleUpdateAppointmentStatus = async () => {
     if (!selectedEvent || !selectedEvent.appointmentId) {
       console.error("No selected event or appointment ID found.");
@@ -508,174 +515,175 @@ function AdminSchedule() {
 
       {/* Edit Event Modal */}
       {selectedEvent && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-9 rounded-lg shadow-lg w-120">
-            {selectedEvent.isBooked && selectedEvent.appointmentInfo ? (
-              <>
-                <h4 className="text-lg font-semibold mb-2">Booked time</h4>
-                <p>
-                  <strong>Caretaker:</strong>{" "}
-                  {selectedEvent.appointmentInfo.patient}
-                </p>
-                <p>
-                  <strong>Caregiver:</strong>{" "}
-                  {selectedEvent.appointmentInfo.caregiver}
-                </p>
-                <p>
-                  <strong>Start time:</strong>{" "}
-                  {moment(selectedEvent.start).format("YYYY-MM-DD HH:mm")}
-                </p>
-                <p>
-                  <strong>End time:</strong>{" "}
-                  {moment(selectedEvent.end).format("YYYY-MM-DD HH:mm")}
-                </p>
-                <div className="flex justify-end mt-4">
-                  <button
-                    onClick={handleSaveAndClose} // Save and close
-                    className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-                  >
-                    Save and Close
-                  </button>
-                  <button
-                    onClick={handleDeleteEvent}
-                    className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                  >
-                    Remove
-                  </button>
-                  <button
-                    onClick={handleUpdateBookedEvent}
-                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                  >
-                    Change
-                  </button>
-            <div className="relative inline-block text-left">
-              <select
-                value={statusMap[selectedEvent.appointmentStatus]} // Map the integer status to a string
-                onChange={(e) =>
-                  setSelectedEvent({
-                    ...selectedEvent,
-                    appointmentStatus: e.target.value, // Update the status in the state
-                  })
-                }
-                className="block w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="Scheduled">Scheduled</option>
-                <option value="Completed">Completed</option>
-                <option value="Cancelled">Cancelled</option>
-              </select>
-            </div>
-                </div>
-              </>
-            ) : (
-              <>
-                <h3 className="text-xl font-bold mb-4">Change availability</h3>
-                <input
-                  type="text"
-                  value={selectedEvent.title}
-                  onChange={(e) =>
-                    setSelectedEvent({
-                      ...selectedEvent,
-                      title: e.target.value,
-                    })
-                  }
-                  className="w-full p-2 border border-gray-300 rounded mb-4"
-                />
-                <label className="block mb-2">Start date and time:</label>
-                <input
-                  type="datetime-local"
-                  value={moment(selectedEvent.start).format("YYYY-MM-DDTHH:mm")}
-                  onChange={(e) =>
-                    setSelectedEvent({
-                      ...selectedEvent,
-                      start: new Date(e.target.value),
-                    })
-                  }
-                  className="w-full p-2 border border-gray-300 rounded mb-4"
-                  step="1800"
-                />
-                <label className="block mb-2">End date and time:</label>
-                <input
-                  type="datetime-local"
-                  value={moment(selectedEvent.end).format("YYYY-MM-DDTHH:mm")}
-                  onChange={(e) =>
-                    setSelectedEvent({
-                      ...selectedEvent,
-                      end: new Date(e.target.value),
-                    })
-                  }
-                  className="w-full p-2 border border-gray-300 rounded mb-4"
-                  step="1800"
-                />
-                <div className="flex justify-end space-x-2">
-                  <button
-                    onClick={() => setSelectedEvent(null)}
-                    className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleDeleteEvent}
-                    className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                  >
-                    Remove
-                  </button>
-                  <button
-                    onClick={handleUpdateEvent}
-                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                  >
-                    Save
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
- {isChangeModalOpen && (
   <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-    <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-      <h3 className="text-xl font-bold mb-4">Change Appointment Time</h3>
-      <select
-        value={selectedNewAvailability ? selectedNewAvailability.id : ""}
-        onChange={(e) => {
-          const selectedId = e.target.value;
-          const selected = availabilities.find(
-            (avail) => avail.id === Number(selectedId)
-          );
-          setSelectedNewAvailability(selected);
-        }}
-        className="w-full p-2 border border-gray-300 rounded mb-4"
-      >
-        <option value="">Select a new time slot</option>
-        {availabilities.map((avail) => (
-          <option key={avail.id} value={avail.id}>
-            {moment(avail.startTime).format("YYYY-MM-DD HH:mm")} -{" "}
-            {moment(avail.endTime).format("HH:mm")}
-          </option>
-        ))}
-      </select>
-      {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-      <div className="flex justify-end space-x-2">
-        <button
-          onClick={() => {
-            setIsChangeModalOpen(false);
-            setSelectedNewAvailability(null); // Reset selected availability
-            setError(null); // Clear any errors
-          }}
-          className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={handleSaveNewAppointmentTime}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Save
-        </button>
-      </div>
+    <div className="bg-white p-9 rounded-lg shadow-lg w-120">
+      {selectedEvent.isBooked && selectedEvent.appointmentInfo ? (
+        <>
+          <h4 className="text-lg font-semibold mb-2">Booked time</h4>
+          <p>
+            <strong>Caretaker:</strong>{" "}
+            {selectedEvent.appointmentInfo.patient}
+          </p>
+          <p>
+            <strong>Caregiver:</strong>{" "}
+            {selectedEvent.appointmentInfo.caregiver}
+          </p>
+          <p>
+            <strong>Start time:</strong>{" "}
+            {moment(selectedEvent.start).format("YYYY-MM-DD HH:mm")}
+          </p>
+          <p>
+            <strong>End time:</strong>{" "}
+            {moment(selectedEvent.end).format("YYYY-MM-DD HH:mm")}
+          </p>
+          <div className="flex justify-end mt-4">
+            <button
+              onClick={handleSaveAndClose} // Save and close
+              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+            >
+              Save and Close
+            </button>
+            <button
+              onClick={handleDeleteEvent}
+              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+            >
+              Remove
+            </button>
+            <button
+              onClick={handleUpdateBookedEvent}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Change
+            </button>
+            <div className="relative inline-block text-left">
+            <select
+              value={selectedEvent?.appointmentStatus || "Scheduled"} // Ensure it defaults to "Scheduled"
+              onChange={(e) =>
+                setSelectedEvent({
+                  ...selectedEvent,
+                  appointmentStatus: e.target.value, // Update the status in state
+                })
+              }
+              className="block w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="Scheduled">Scheduled</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          <h3 className="text-xl font-bold mb-4">Change availability</h3>
+          <input
+            type="text"
+            value={selectedEvent.title}
+            onChange={(e) =>
+              setSelectedEvent({
+                ...selectedEvent,
+                title: e.target.value,
+              })
+            }
+            className="w-full p-2 border border-gray-300 rounded mb-4"
+          />
+          <label className="block mb-2">Start date and time:</label>
+          <input
+            type="datetime-local"
+            value={moment(selectedEvent.start).format("YYYY-MM-DDTHH:mm")}
+            onChange={(e) =>
+              setSelectedEvent({
+                ...selectedEvent,
+                start: new Date(e.target.value),
+              })
+            }
+            className="w-full p-2 border border-gray-300 rounded mb-4"
+            step="1800"
+          />
+          <label className="block mb-2">End date and time:</label>
+          <input
+            type="datetime-local"
+            value={moment(selectedEvent.end).format("YYYY-MM-DDTHH:mm")}
+            onChange={(e) =>
+              setSelectedEvent({
+                ...selectedEvent,
+                end: new Date(e.target.value),
+              })
+            }
+            className="w-full p-2 border border-gray-300 rounded mb-4"
+            step="1800"
+          />
+          <div className="flex justify-end space-x-2">
+            <button
+              onClick={() => setSelectedEvent(null)}
+              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleDeleteEvent}
+              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+            >
+              Remove
+            </button>
+            <button
+              onClick={handleUpdateEvent}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Save
+            </button>
+          </div>
+        </>
+      )}
     </div>
   </div>
 )}
+
+      {isChangeModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+            <h3 className="text-xl font-bold mb-4">Change Appointment Time</h3>
+            <select
+              value={selectedNewAvailability ? selectedNewAvailability.id : ""}
+              onChange={(e) => {
+                const selectedId = e.target.value;
+                const selected = availabilities.find(
+                  (avail) => avail.id === Number(selectedId)
+                );
+                setSelectedNewAvailability(selected);
+              }}
+              className="w-full p-2 border border-gray-300 rounded mb-4"
+            >
+              <option value="">Select a new time slot</option>
+              {availabilities.map((avail) => (
+                <option key={avail.id} value={avail.id}>
+                  {moment(avail.startTime).format("YYYY-MM-DD HH:mm")} -{" "}
+                  {moment(avail.endTime).format("HH:mm")}
+                </option>
+              ))}
+            </select>
+            {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={() => {
+                  setIsChangeModalOpen(false);
+                  setSelectedNewAvailability(null); // Reset selected availability
+                  setError(null); // Clear any errors
+                }}
+                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveNewAppointmentTime}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Calendar Component */}
       <MyCalendar
         selectable={true}
