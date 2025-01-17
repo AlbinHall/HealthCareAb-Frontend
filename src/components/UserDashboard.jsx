@@ -1,15 +1,51 @@
+import { useEffect, useState } from "react";
+import axios from "axios";
 import { useAuth } from "../hooks/useAuth";
 import Logo from "../assets/health_care_logo.svg";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 function UserDashboard() {
-  // using custom hook to check if the user i authenticated and has the correct role
-  const { authState: { firstname, lastname }, } = useAuth();
+  const {
+    authState: { userId, firstname, lastname },
+  } = useAuth();
+  const [nextAppointments, setNextAppointments] = useState([]);
+
+  useEffect(() => {
+    if (!userId) return;
+    const fetchAppointments = async () => {
+      const response = await axios.get(
+        `${API_BASE_URL}/Appointment/getscheduledappointmentsbypatientid/${userId}`,
+        {
+          withCredentials: true,
+        }
+      );
+      setNextAppointments(response.data);
+    };
+    fetchAppointments();
+  }, []);
 
   return (
     <div className="flex flex-col items-center justify-center p-4">
       <img src={Logo} alt="Health Care Logo" className="h-80 mb-6" />
-      <h2 className="text-2xl font-bold mb-4">User Dashboard</h2>
-      <p className="text-lg mb-6">Welcome, {firstname} {lastname}!</p>
+      <p>Next appointment: blablabla</p>
+      {nextAppointments.length === 0 ? (
+        <p>No upcoming appointments</p>
+      ) : (
+        <ul>
+          {nextAppointments.map((appointment) => (
+            <li key={appointment.id}>
+              <p>Caregiver: {appointment.caregiverName}</p>
+              <p>Patient: {appointment.patientName}</p>
+              <p>
+                Time: {new Date(appointment.appointmentTime).toLocaleString()}
+              </p>
+            </li>
+          ))}
+        </ul>
+      )}
+      <p>History</p>
+      <p>Today's available slots</p>
     </div>
   );
 }
