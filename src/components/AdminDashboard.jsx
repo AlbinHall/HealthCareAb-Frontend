@@ -252,7 +252,6 @@ function AdminDashboard() {
           }
         `}
       </style>
-    </div>
   );
 }
 

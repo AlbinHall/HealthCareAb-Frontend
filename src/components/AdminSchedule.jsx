@@ -154,8 +154,8 @@ function AdminSchedule() {
         setSelectedEvent({
           ...event,
           appointmentInfo: {
-            patient: appointmentInfo.patient.username,
-            caregiver: appointmentInfo.caregiver.username,
+            patient: appointmentInfo.patient.firstname + " " + appointmentInfo.patient.lastname,
+            caregiver: appointmentInfo.caregiver.firstname + " " + appointmentInfo.caregiver.lastname,
           },
         });
       } catch (error) {
