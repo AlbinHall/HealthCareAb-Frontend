@@ -4,6 +4,7 @@ import axios from "axios";
 import { format } from "date-fns";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { bookAppointment } from "./BookingUtils";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -72,20 +73,8 @@ const UserSchedule = () => {
       return;
     }
 
-    const appointmentData = {
-      patientId: userId,
-      caregiverId: selectedCaregiverId,
-      appointmentTime: selectedSlot.start,
-    };
-
     try {
-      await axios.post(
-        `${API_BASE_URL}/Appointment/createappointment`,
-        appointmentData,
-        {
-          withCredentials: true,
-        }
-      );
+      await bookAppointment(userId, selectedSlot, selectedCaregiverId);
       setIsBookedModal(true);
       setBookingCompleted(true);
       setErrorMessage("");
@@ -173,7 +162,10 @@ const UserSchedule = () => {
               style={{ backgroundColor: "#fff" }}
             >
               <h2 className="mb-2">
-                Bokning avser <span className="font-bold">{firstname} {lastname}</span>
+                Bokning avser{" "}
+                <span className="font-bold">
+                  {firstname} {lastname}
+                </span>
               </h2>
               Tid:{" "}
               <span className="font-bold">
@@ -235,7 +227,9 @@ const UserSchedule = () => {
             <div className="p-6 rounded-lg shadow-lg w-96 bg-gray-100">
               <h2 className="mb-2">
                 Bekräftelse av tidsbokning för{" "}
-                <span className="font-bold">{firstname} {lastname}</span>
+                <span className="font-bold">
+                  {firstname} {lastname}
+                </span>
               </h2>
               <p>
                 Läkare:{" "}
