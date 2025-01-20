@@ -75,8 +75,6 @@ const UserSchedule = () => {
       return;
     }
 
-    console.log("Description: ", description);
-
     try {
       await bookAppointment(
         userId,
@@ -88,7 +86,6 @@ const UserSchedule = () => {
       setBookingCompleted(true);
       setErrorMessage("");
       setShowModal(false);
-      setDescription("");
     } catch (error) {
       console.error("Error creating appointment:", error);
       if (error.response) {
@@ -121,6 +118,7 @@ const UserSchedule = () => {
     setIsBookedModal(false);
     setSelectedCaregiverId(null);
     setErrorMessage("");
+    setDescription("");
   };
 
   const eventStyleGetter = (event) => {
@@ -194,7 +192,9 @@ const UserSchedule = () => {
                   <p className="text-red-600">{errorMessage}</p>
                 )}
                 <p className="mb-2">
-                  {selectedSlot.caregivers.length} doctor available
+                  {selectedSlot.caregivers.length === 1
+                    ? "1 doctor available"
+                    : `${selectedSlot.caregivers.length} doctors available`}
                 </p>
                 <select
                   className="w-full p-2 border rounded"
@@ -250,35 +250,31 @@ const UserSchedule = () => {
                 </span>
               </h2>
               <p>
-                Doctor:{" "}
-                <span className="font-bold">
-                  {
-                    selectedSlot.caregivers.find(
-                      (caregiver) =>
-                        caregiver.id === Number(selectedCaregiverId)
-                    )?.name
-                  }
-                </span>
+                <span className="font-bold">Doctor: </span>
+                {
+                  selectedSlot.caregivers.find(
+                    (caregiver) => caregiver.id === Number(selectedCaregiverId)
+                  )?.name
+                }
               </p>
               <p>
-                ToD:{" "}
-                <span className="font-bold">
-                  {format(selectedSlot.start, "HH:mm")} -{" "}
-                  {format(selectedSlot.end, "HH:mm")}
-                </span>
+                <span className="font-bold">ToD: </span>
+                {format(selectedSlot.start, "HH:mm")} -{" "}
+                {format(selectedSlot.end, "HH:mm")}
               </p>
               <p>
-                Date:{" "}
-                <span className="font-bold">
-                  {format(selectedSlot.start, "yy-MM-dd")}
-                </span>
+                <span className="font-bold">Date: </span>
+                {format(selectedSlot.start, "yy-MM-dd")}
+              </p>
+              <p>
+                <span className="font-bold">Description:</span> {description}
               </p>
               <div className="flex justify-end space-x-2">
                 <button
                   onClick={handleConfirmClick}
-                  className="px-4 py-2 m-2 text-white bg-[#057d7a] rounded hover:bg-[#2fadaa]"
+                  className="px-4 py-2 mt-3 text-white bg-[#057d7a] rounded hover:bg-[#2fadaa]"
                 >
-                  Confirm
+                  Okay!
                 </button>
               </div>
             </div>
