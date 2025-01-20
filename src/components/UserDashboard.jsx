@@ -4,6 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import Logo from "../assets/health_care_logo.svg";
 import { format, set } from "date-fns";
 import { bookAppointment } from "./BookingUtils";
+import ErrorModal from "./ErrorModal";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -19,8 +20,11 @@ function UserDashboard() {
   const [availableSlots, setAvailableSlots] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [selectedCaregiverId, setSelectedCaregiverId] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [selectedCaregiverId, setSelectedCaregiverId] = useState(null);
 
   // Fetch scheduled appointments
   useEffect(() => {
@@ -42,7 +46,7 @@ function UserDashboard() {
       }
     };
     fetchScheduledAppointments();
-  }, []);
+  }, [availableSlots]);
 
   // Fetch historic appointments
   useEffect(() => {
@@ -74,12 +78,34 @@ function UserDashboard() {
         }
       );
 
-      // Filter for today's date
-      const today = new Date().toISOString().split("T")[0]; // yyyy-MM-dd
-      const filteredSLots = response.data.filter((slot) => {
-        const slotDate = new Date(slot.startTime).toISOString().split("T")[0];
-        return slotDate === today;
-      });
+      const now = new Date();
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const filteredSLots = response.data
+        .map((slot) => {
+          const start = new Date(slot.startTime);
+          const end = new Date(slot.endTime);
+
+          if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+            console.error("Invalid date:", slot.startTime, slot.endTime);
+            return null;
+          }
+
+          return {
+            ...slot,
+            start,
+            end,
+          };
+        })
+        .filter(Boolean)
+        .filter((slot) => {
+          const slotDate = new Date(slot.start);
+          slotDate.setHours(0, 0, 0, 0);
+
+          // Check if slot is today and not in the past, ToD included
+          return slotDate.getTime() === today.getTime() && slot.start > now;
+        });
 
       setAvailableSlots(filteredSLots);
     } catch (error) {
@@ -94,23 +120,74 @@ function UserDashboard() {
   }, []);
 
   const handleBookingClick = (slot) => {
-    console.log("Slot: ", slot);
     setSelectedSlot(slot);
     setShowModal(true);
   };
 
+  const handleCancelAppointment = async (appointment) => {
+    if (!appointment) return;
+
+    setSelectedAppointment(appointment);
+    setShowConfirmationModal(true);
+  };
+
+  const handleConfirmCancel = async () => {
+    if (!selectedAppointment) return;
+
+    setShowConfirmationModal(false);
+    try {
+      await axios.delete(
+        `${API_BASE_URL}/Appointment/deleteappointment/${selectedAppointment.id}`,
+        {
+          withCredentials: true,
+        }
+      );
+
+      setNextAppointments((prevAppointments) =>
+        prevAppointments.filter((app) => app.id !== selectedAppointment.id)
+      );
+
+      setShowModal(false);
+      getAvailableSlots();
+    } catch (error) {
+      console.error("Error deleting appointment:", error);
+      if (error.response) {
+        setErrorMessage(error.response.data.message);
+      } else if (error.request) {
+        setErrorMessage(
+          "Server not responding. Check your connection and try again."
+        );
+      } else {
+        setErrorMessage("An error occurred. Please try again.");
+      }
+    }
+  };
+
   const handleSubmit = async () => {
     if (!selectedCaregiverId) {
-      setErrorMessage("Du måste välja en läkare.");
+      setErrorMessage("Select a caregiver.");
       return;
     }
-    console.log("Selected slot: ", selectedSlot);
+
     try {
       await bookAppointment(userId, selectedSlot, selectedCaregiverId);
       setShowModal(false);
       getAvailableSlots();
     } catch (error) {
-      setErrorMessage(error.message);
+      console.error("Error creating appointment:", error);
+      if (error.response) {
+        setErrorMessage(error.response.data.message);
+      } else if (error.request) {
+        setErrorMessage(
+          "Server not responding. Check your connection and try again."
+        );
+      } else if (error) {
+        setErrorMessage(error.message);
+      } else {
+        setErrorMessage("An error occurred. Please try again.");
+      }
+      setShowErrorModal(true);
+      setShowModal(false);
     }
   };
 
@@ -132,9 +209,10 @@ function UserDashboard() {
     <div className="flex flex-col items-center justify-center p-4">
       <img src={Logo} alt="Health Care Logo" className="h-80 mb-6" />
       <div className="card-container flex justify-evenly w-full mt-8">
+        {/* Upcoming appointments card */}
         <div className="upcoming-card max-w-sm rounded px-2 overflow-hidden shadow-lg h-80 min-w-[30%] bg-gradient-to-r from-white to-gray-50 overflow-y-auto">
           <h3 className="text-xl font-semibold mb-4 sticky top-0 bg-gradient-to-r from-white to-gray-50 py-2 z-10 shadow-sm border-b border-gray-200">
-            Upcoming appointments
+            Your upcoming appointments
           </h3>
           {nextAppointments.length === 0 ? (
             <p className="font-bold text-lg mb-4">No upcoming appointments</p>
@@ -143,21 +221,30 @@ function UserDashboard() {
               {nextAppointments.map((appointment) => (
                 <li
                   key={appointment.id}
-                  className="mb-2 p-1 bg-gray-100 rounded-lg"
+                  className="mb-2 p-1 bg-gray-100 rounded-lg flex justify-between items-center hover:bg-gray-200"
                 >
-                  <p>
-                    <span className="font-semibold">Time:</span>{" "}
-                    {formatTime(appointment.appointmentTime)}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Caregiver:</span>{" "}
-                    {appointment.caregiverName}
-                  </p>
+                  <div>
+                    <p>
+                      <span className="font-semibold">Time:</span>{" "}
+                      {formatTime(appointment.appointmentTime)}
+                    </p>
+                    <p>
+                      <span className="font-semibold">Caregiver:</span>{" "}
+                      {appointment.caregiverName}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleCancelAppointment(appointment)}
+                    className="px-3 py-2 bg-[#ff3f34] text-white rounded hover:bg-[#ff5e57]"
+                  >
+                    Cancel
+                  </button>
                 </li>
               ))}
             </ul>
           )}
         </div>
+        {/* Today's available appointments card */}
         <div className="slots-card max-w-sm rounded px-2 overflow-hidden shadow-lg h-80 min-w-[30%] bg-gradient-to-r from-white to-gray-50 overflow-y-auto">
           <h3 className="text-xl font-semibold mb-4 sticky top-0 bg-gradient-to-r from-white to-gray-50 py-2 z-10 shadow-sm border-b border-gray-200">
             Today's available times
@@ -167,18 +254,23 @@ function UserDashboard() {
           ) : (
             <ul>
               {availableSlots.map((slot) => (
-                <li key={slot.id} className="mb-2 p-1 bg-gray-100 rounded-lg">
-                  <p>
-                    <span className="font-semibold">Time:</span>{" "}
-                    {formatTime(slot.startTime)}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Caregiver:</span>{" "}
-                    {slot.caregivers[0].name}
-                  </p>
+                <li
+                  key={slot.id}
+                  className="mb-2 p-1 bg-gray-100 rounded-lg flex justify-between items-center hover:bg-gray-200"
+                >
+                  <div>
+                    <p>
+                      <span className="font-semibold">Time:</span>{" "}
+                      {formatTime(slot.start)}
+                    </p>
+                    {/* <p>
+                      <span className="font-semibold">Caregiver:</span>{" "}
+                      {slot.caregivers[0].name}
+                    </p> */}
+                  </div>
                   <button
                     onClick={() => handleBookingClick(slot)}
-                    className="mt-2 px-4 py-2 bg-[#057d7a] text-white rounded hover:bg-[#2fadaa]"
+                    className="px-3 py-2 bg-[#057d7a] text-white rounded hover:bg-[#2fadaa]"
                   >
                     Book
                   </button>
@@ -187,6 +279,7 @@ function UserDashboard() {
             </ul>
           )}
         </div>
+        {/* History card */}
         <div className="history-card max-w-sm rounded px-2 overflow-hidden shadow-lg h-80 min-w-[30%] bg-gradient-to-r from-white to-gray-50 overflow-y-auto">
           <h3 className="text-xl font-semibold mb-4 sticky top-0 bg-gradient-to-r from-white to-gray-50 py-2 z-10 shadow-sm border-b border-gray-200">
             Historic appointments
@@ -216,20 +309,20 @@ function UserDashboard() {
             style={{ backgroundColor: "#fff" }}
           >
             <h2 className="mb-2">
-              Bokning avser{" "}
+              Appointment regarding{" "}
               <span className="font-bold">
                 {firstname} {lastname}
               </span>
             </h2>
-            Tid:{" "}
+            ToD:{" "}
             <span className="font-bold">
-              {format(selectedSlot.startTime, "HH:mm")} -{" "}
-              {format(selectedSlot.endTime, "HH:mm")}
+              {format(selectedSlot.start, "HH:mm")} -{" "}
+              {format(selectedSlot.end, "HH:mm")}
             </span>
             <p>
-              Datum:{" "}
+              Date:{" "}
               <span className="font-bold">
-                {format(selectedSlot.startTime, "yy-MM-dd")}
+                {format(selectedSlot.start, "yy-MM-dd")}
               </span>
             </p>
             <div className="mt-5 space-x-2">
@@ -237,19 +330,19 @@ function UserDashboard() {
                 <p className="text-red-600">{errorMessage}</p>
               )}
               <p className="mb-2">
-                Välj läkare: (
-                {selectedSlot.caregivers.length > 1
-                  ? `${selectedSlot.caregivers.length} tillgängliga`
-                  : `${selectedSlot.caregivers.length} tillgänglig`}
-                )
+                {selectedSlot.caregivers.length} doctor available
               </p>
               <select
                 className="w-full p-2 border rounded"
                 onChange={(e) => setSelectedCaregiverId(Number(e.target.value))}
               >
-                <option value="">Välj här</option>
+                <option value="">No doctor selected</option>
                 {selectedSlot.caregivers.map((caregiver) => (
-                  <option key={caregiver.id} value={caregiver.id}>
+                  <option
+                    key={caregiver.id}
+                    value={caregiver.id}
+                    className="font-semibold"
+                  >
                     {caregiver.name}
                   </option>
                 ))}
@@ -260,18 +353,54 @@ function UserDashboard() {
                 onClick={handleAbort}
                 className="px-4 py-2 m-2 bg-gray-500 text-white rounded hover:bg-gray-600"
               >
-                Avbryt
+                Cancel
               </button>
               <button
                 onClick={handleSubmit}
                 className="px-4 py-2 m-2 text-white bg-[#057d7a] rounded hover:bg-[#2fadaa]"
               >
-                Boka
+                Confirm
               </button>
             </div>
           </div>
         </div>
       )}
+      {showConfirmationModal && selectedAppointment && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h3 className="text-xl font-bold mb-4">Confirm cancellation</h3>
+            <p className="mb-4">
+              Are you sure you want to cancel this appointment?
+            </p>
+            <div className="space-x-2">
+              <p className="font-semibold">Appointment:</p>
+              <p>{formatTime(selectedAppointment.appointmentTime)}</p>
+            </div>
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowConfirmationModal(false)}
+                className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 mr-2"
+              >
+                No
+              </button>
+              <button
+                onClick={handleConfirmCancel}
+                className="px-4 py-2 bg-[#ff3f34] text-white rounded hover:bg-[#ff5e57]"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      <div>
+        {showErrorModal && (
+          <ErrorModal
+            errorMessage={errorMessage}
+            onClose={() => setShowErrorModal(false)}
+          />
+        )}
+      </div>
     </div>
   );
 }

@@ -10,7 +10,7 @@ export const bookAppointment = async (
   const appointmentData = {
     patientId: userId,
     caregiverId: selectedCaregiverId,
-    appointmentTime: selectedSlot.startTime,
+    appointmentTime: selectedSlot.start || selectedSlot.startTime, // Fult men funkar
   };
   console.log("AppointmentData: ", appointmentData);
   try {
@@ -28,10 +28,10 @@ export const bookAppointment = async (
       throw new Error(error.response.data.message);
     } else if (error.request) {
       throw new Error(
-        "Servern svarar inte. Kontrollera din anslutning och försök igen."
+        "Server not responding. Check your connection and try again."
       );
     } else {
-      throw new Error("Nåt gick fel. Försök igen");
+      throw new Error("An error occurred. Please try again.");
     }
   }
 };
