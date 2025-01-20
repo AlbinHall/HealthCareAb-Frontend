@@ -358,14 +358,14 @@ function AdminSchedule() {
   
     const payload = {
       AppointmentId: selectedEvent.appointmentId,
-      caregiverid: authState.userId, // Assuming caregiverid is the same as the authenticated user's ID
-      newavailabilityid: selectedEvent.id, // Use the current event's ID as the new availability ID
-      oldavailabilityid: selectedEvent.id, // Use the current event's ID as the old availability ID
-      appointmenttime: selectedEvent.start.toISOString(), // Ensure this is in ISO format
-      Status: statusMap[selectedEvent.appointmentStatus], // Map to the correct integer value
+      caregiverid: authState.userId,
+      newavailabilityid: selectedEvent.id, 
+      oldavailabilityid: selectedEvent.id, 
+      appointmenttime: selectedEvent.start.toISOString(),
+      Status: statusMap[selectedEvent.appointmentStatus],
     };
   
-    console.log("Payload being sent:", payload); // Debugging
+    console.log("Payload being sent:", payload);
   
     try {
       const response = await axios.put(
@@ -379,14 +379,13 @@ function AdminSchedule() {
     } catch (error) {
       console.error("Error updating appointment status:", error);
       if (error.response) {
-        console.error("Backend response:", error.response.data); // Log the backend's error message
+        console.error("Backend response:", error.response.data); 
       }
       throw error;
     }
   };
   const handleSaveAndClose = async () => {
     try {
-      // Save the appointment status
       await handleUpdateAppointmentStatus();
   
       // Close the modal
@@ -557,7 +556,7 @@ function AdminSchedule() {
             </button>
             <div className="relative inline-block text-left">
             <select
-              value={selectedEvent?.appointmentStatus || "Scheduled"} // Ensure it defaults to "Scheduled"
+              value={selectedEvent?.appointmentStatus}
               onChange={(e) =>
                 setSelectedEvent({
                   ...selectedEvent,
