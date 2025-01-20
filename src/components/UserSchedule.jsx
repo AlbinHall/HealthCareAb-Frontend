@@ -4,6 +4,8 @@ import axios from "axios";
 import { format } from "date-fns";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { bookAppointment } from "./BookingUtils";
+import ErrorModal from "./ErrorModal";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -73,21 +75,8 @@ const UserSchedule = () => {
       return;
     }
 
-    const appointmentData = {
-      patientId: userId,
-      caregiverId: selectedCaregiverId,
-      appointmentTime: selectedSlot.start,
-      description: description,
-    };
-
     try {
-      await axios.post(
-        `${API_BASE_URL}/Appointment/createappointment`,
-        appointmentData,
-        {
-          withCredentials: true,
-        }
-      );
+      await bookAppointment(userId, selectedSlot, selectedCaregiverId);
       setIsBookedModal(true);
       setBookingCompleted(true);
       setErrorMessage("");
@@ -104,6 +93,7 @@ const UserSchedule = () => {
         setErrorMessage("An error occurred. Please try again.");
       }
       setShowErrorModal(true);
+      setShowModal(false);
     }
   };
 
@@ -180,13 +170,13 @@ const UserSchedule = () => {
                   {firstname} {lastname}
                 </span>
               </h2>
-              Tid:{" "}
+              ToD{" "}
               <span className="font-bold">
                 {format(selectedSlot.start, "HH:mm")} -{" "}
                 {format(selectedSlot.end, "HH:mm")}
               </span>
               <p>
-                Datum:{" "}
+                Date:{" "}
                 <span className="font-bold">
                   {format(selectedSlot.start, "yy-MM-dd")}
                 </span>
@@ -196,11 +186,7 @@ const UserSchedule = () => {
                   <p className="text-red-600">{errorMessage}</p>
                 )}
                 <p className="mb-2">
-                  Välj läkare: (
-                  {selectedSlot.caregivers.length > 1
-                    ? `${selectedSlot.caregivers.length} tillgängliga`
-                    : `${selectedSlot.caregivers.length} tillgänglig`}
-                  )
+                  {selectedSlot.caregivers.length} doctor available
                 </p>
                 <select
                   className="w-full p-2 border rounded"
@@ -208,9 +194,13 @@ const UserSchedule = () => {
                     setSelectedCaregiverId(Number(e.target.value))
                   }
                 >
-                  <option value="">Välj här</option>
+                  <option value="">No doctor selected</option>
                   {selectedSlot.caregivers.map((caregiver) => (
-                    <option key={caregiver.id} value={caregiver.id}>
+                    <option
+                      key={caregiver.id}
+                      value={caregiver.id}
+                      className="font-semibold"
+                    >
                       {caregiver.name}
                     </option>
                   ))}
@@ -228,13 +218,13 @@ const UserSchedule = () => {
                   onClick={handleAbort}
                   className="px-4 py-2 m-2 bg-gray-500 text-white rounded hover:bg-gray-600"
                 >
-                  Avbryt
+                  Cancel
                 </button>
                 <button
                   onClick={handleSubmit}
                   className="px-4 py-2 m-2 text-white bg-[#057d7a] rounded hover:bg-[#2fadaa]"
                 >
-                  Boka
+                  Confirm
                 </button>
               </div>
             </div>
@@ -246,11 +236,13 @@ const UserSchedule = () => {
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
             <div className="p-6 rounded-lg shadow-lg w-96 bg-gray-100">
               <h2 className="mb-2">
-                Bekräftelse av tidsbokning för{" "}
-                <span className="font-bold">{firstname} {lastname}</span>
+                Confirmation for{" "}
+                <span className="font-bold">
+                  {firstname} {lastname}
+                </span>
               </h2>
               <p>
-                Läkare:{" "}
+                Doctor:{" "}
                 <span className="font-bold">
                   {
                     selectedSlot.caregivers.find(
@@ -261,14 +253,14 @@ const UserSchedule = () => {
                 </span>
               </p>
               <p>
-                Tid:{" "}
+                ToD:{" "}
                 <span className="font-bold">
                   {format(selectedSlot.start, "HH:mm")} -{" "}
                   {format(selectedSlot.end, "HH:mm")}
                 </span>
               </p>
               <p>
-                Datum:{" "}
+                Date:{" "}
                 <span className="font-bold">
                   {format(selectedSlot.start, "yy-MM-dd")}
                 </span>
@@ -278,7 +270,7 @@ const UserSchedule = () => {
                   onClick={handleConfirmClick}
                   className="px-4 py-2 m-2 text-white bg-[#057d7a] rounded hover:bg-[#2fadaa]"
                 >
-                  Okej!
+                  Confirm
                 </button>
               </div>
             </div>
@@ -287,20 +279,10 @@ const UserSchedule = () => {
       </div>
       <div>
         {showErrorModal && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="p-6 rounded-lg shadow-lg w-96 bg-white">
-              <h2 className="mb-2">Fel vid bokning</h2>
-              <p className="text-red-600">{errorMessage}</p>
-              <div className="flex justify-end space-x-2">
-                <button
-                  onClick={() => setShowErrorModal(false)}
-                  className="px-4 py-2 m-2 text-white bg-[#057d7a] rounded hover:bg-[#2fadaa]"
-                >
-                  Stäng
-                </button>
-              </div>
-            </div>
-          </div>
+          <ErrorModal
+            errorMessage={errorMessage}
+            onClose={() => setShowErrorModal(false)}
+          />
         )}
       </div>
     </div>
