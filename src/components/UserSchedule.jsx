@@ -23,6 +23,7 @@ const UserSchedule = () => {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [showNoSlotsModal, setShowNoSlotsModal] = useState(false);
   const [selectedCaregiverId, setSelectedCaregiverId] = useState(null);
+  const [description, setDescription] = useState("");
 
   useEffect(() => {
     const fetchSlots = async () => {
@@ -70,16 +71,24 @@ const UserSchedule = () => {
 
   const handleSubmit = async () => {
     if (!selectedCaregiverId) {
-      setErrorMessage("Select a caregiver.");
+      setErrorMessage("Select a caregiver");
       return;
     }
-    console.log("Selected slot: ", selectedSlot);
+
+    console.log("Description: ", description);
+
     try {
-      await bookAppointment(userId, selectedSlot, selectedCaregiverId);
+      await bookAppointment(
+        userId,
+        selectedSlot,
+        selectedCaregiverId,
+        description
+      );
       setIsBookedModal(true);
       setBookingCompleted(true);
       setErrorMessage("");
       setShowModal(false);
+      setDescription("");
     } catch (error) {
       console.error("Error creating appointment:", error);
       if (error.response) {
@@ -204,6 +213,13 @@ const UserSchedule = () => {
                     </option>
                   ))}
                 </select>
+                <h2 className="mb-2">Beskrivning av bokning</h2>
+                <textarea
+                  className="w-full p-2 border rounded"
+                  placeholder="Beskrivning"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
               </div>
               <div className="flex justify-end space-x-2">
                 <button
