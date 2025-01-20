@@ -41,7 +41,7 @@ const UserSchedule = () => {
         }
 
         const transformedSlots = availableSlots.map((slot) => ({
-          title: "Tillgänglig tid",
+          title: "Available",
           start: new Date(slot.startTime),
           end: new Date(slot.endTime),
           caregiverId: slot.caregiverId,
@@ -69,7 +69,7 @@ const UserSchedule = () => {
 
   const handleSubmit = async () => {
     if (!selectedCaregiverId) {
-      setErrorMessage("Du måste välja en läkare.");
+      setErrorMessage("Select a caregiver");
       return;
     }
 
@@ -98,10 +98,10 @@ const UserSchedule = () => {
         setErrorMessage(error.response.data.message);
       } else if (error.request) {
         setErrorMessage(
-          "Servern svarar inte. Kontrollera din anslutning och försök igen."
+          "Server not responding. Check your connection and try again."
         );
       } else {
-        setErrorMessage("Nåt gick fel. Försök igen");
+        setErrorMessage("An error occurred. Please try again.");
       }
       setShowErrorModal(true);
     }
@@ -154,13 +154,13 @@ const UserSchedule = () => {
         {showNoSlotsModal && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
             <div className="p-6 rounded-lg shadow-lg w-96 bg-white">
-              <h2 className="mb-2">Inga tillgängliga tider</h2>
+              <h2 className="mb-2">No available slots</h2>
               <div className="flex justify-end space-x-2">
                 <button
                   onClick={handleNoSlots}
                   className="px-4 py-2 m-2 text-white bg-[#057d7a] rounded hover:bg-[#2fadaa]"
                 >
-                  Stäng
+                  Cancel
                 </button>
               </div>
             </div>
@@ -175,7 +175,10 @@ const UserSchedule = () => {
               style={{ backgroundColor: "#fff" }}
             >
               <h2 className="mb-2">
-                Bokning avser <span className="font-bold">{firstname} {lastname}</span>
+              Appointment regarding{" "}
+                <span className="font-bold">
+                  {firstname} {lastname}
+                </span>
               </h2>
               Tid:{" "}
               <span className="font-bold">

@@ -156,6 +156,7 @@ function AdminSchedule() {
           appointmentInfo: {
             patient: appointmentInfo.patient.firstname + " " + appointmentInfo.patient.lastname,
             caregiver: appointmentInfo.caregiver.firstname + " " + appointmentInfo.caregiver.lastname,
+            description: appointmentInfo.description,
           },
         });
       } catch (error) {
@@ -464,6 +465,10 @@ function AdminSchedule() {
                 <p>
                   <strong>End time:</strong>{" "}
                   {moment(selectedEvent.end).format("YYYY-MM-DD HH:mm")}
+                </p>
+                <p>
+                  <strong>Description:</strong>{" "}
+                  {selectedEvent.appointmentInfo.description}
                 </p>
                 <div className="flex justify-end mt-4">
                   <button
