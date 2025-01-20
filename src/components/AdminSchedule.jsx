@@ -3,6 +3,7 @@ import { useAuth } from "../hooks/useAuth";
 import MyCalendar from "./Calendar";
 import axios from "axios";
 import moment from "moment";
+import { se } from "date-fns/locale";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -116,6 +117,7 @@ function AdminSchedule() {
   const [error, setError] = useState(null);
   const [availabilities, setAvailabilities] = useState([]);
   const [selectedNewAvailability, setSelectedNewAvailability] = useState(null);
+  const [appointmentStatus, setAppointmentStatus] = useState("");
 
   useEffect(() => {
     const fetchAvailability = async () => {
@@ -157,15 +159,24 @@ function AdminSchedule() {
             patient: appointmentInfo.patient.firstname + " " + appointmentInfo.patient.lastname,
             caregiver: appointmentInfo.caregiver.firstname + " " + appointmentInfo.caregiver.lastname,
             description: appointmentInfo.description,
+            appointmentStatus: appointmentInfo.status,
           },
+          appointmentStatus: statusMap[appointmentInfo.Status], // Map integer to string status
         });
       } catch (error) {
         setError("Kunde inte hämta bokningsinformation. Vänligen försök igen.");
       }
     } else {
-      setSelectedEvent(event);
+      setSelectedEvent({
+        ...event,
+        appointmentStatus: "Scheduled", // Default status for non-booked events
+      });
     }
+    console.log("Selected Event:", event); // Debug log
   };
+  useEffect(() => {
+    console.log("Selected Event Updated:", selectedEvent); // Debug log
+  }, [selectedEvent]);
 
   const eventPropGetter = (event) => {
     const style = {
@@ -179,14 +190,13 @@ function AdminSchedule() {
       style,
     };
   };
-  // Round time to the nearest 30-minute interval
+
   const roundToNearest30Minutes = (date) => {
     const minutes = moment(date).minutes();
     const roundedMinutes = minutes < 30 ? 0 : 30;
     return moment(date).minutes(roundedMinutes).seconds(0).toDate();
   };
 
-  // Handle time input change
   const handleTimeChange = (field, value) => {
     const date = moment(value);
     const roundedDate = roundToNearest30Minutes(date.toDate());
@@ -209,7 +219,6 @@ function AdminSchedule() {
     setNewEvent((prev) => ({ ...prev, [field]: roundedDate }));
   };
 
-  // Handle slot selection
   const handleSelectSlot = ({ start, end }) => {
     const adjustedStart = roundToNearest30Minutes(start);
     const adjustedEnd = roundToNearest30Minutes(end);
@@ -227,7 +236,6 @@ function AdminSchedule() {
     setTimeError("");
   };
 
-  // Handle event creation
   const handleAddEvent = async () => {
     if (newEvent.title && newEvent.start && newEvent.end) {
       const startHour = moment(newEvent.start).hour();
@@ -374,6 +382,65 @@ function AdminSchedule() {
       setError("Failed to update the appointment. Please try again.");
     }
   };
+
+  const handleUpdateAppointmentStatus = async () => {
+    if (!selectedEvent || !selectedEvent.appointmentId) {
+      console.error("No selected event or appointment ID found.");
+      return;
+    }
+
+    // Map the frontend status to the backend enum values
+    const statusMap = {
+      Scheduled: 0,
+      Completed: 1,
+      Cancelled: 2,
+    };
+
+    const payload = {
+      AppointmentId: selectedEvent.appointmentId,
+      caregiverid: authState.userId,
+      newavailabilityid: selectedEvent.id, 
+      oldavailabilityid: selectedEvent.id, 
+      appointmenttime: selectedEvent.start.toISOString(),
+      Status: statusMap[selectedEvent.appointmentStatus],
+    };
+
+    console.log("Payload being sent:", payload);
+
+    try {
+      const response = await axios.put(
+        `${API_BASE_URL}/appointment/updateappointment`,
+        payload,
+        {
+          withCredentials: true,
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error updating appointment status:", error);
+      if (error.response) {
+        console.error("Backend response:", error.response.data); 
+      }
+      throw error;
+    }
+  };
+  const handleSaveAndClose = async () => {
+    try {
+      await handleUpdateAppointmentStatus();
+
+      // Close the modal
+      setSelectedEvent(null);
+    } catch (error) {
+      console.error("Error saving and closing:", error);
+      setError("Failed to save the appointment status. Please try again.");
+    }
+  };
+
+  const statusMap = {
+    0: "Scheduled",
+    1: "Completed",
+    2: "Cancelled",
+  };
   
   return (
     <>
@@ -446,10 +513,13 @@ function AdminSchedule() {
       {/* Edit Event Modal */}
       {selectedEvent && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-100">
             {selectedEvent.isBooked && selectedEvent.appointmentInfo ? (
               <>
-                <h4 className="text-lg font-semibold mb-2">Booked time</h4>
+                <div className="flex justify-between items-center">
+                  <h4 className="text-lg font-semibold mb-2">Booked time</h4>
+                  <button className="mr-2" onClick={() => setSelectedEvent(null)}>❌</button>
+                </div>
                 <p>
                   <strong>Caretaker:</strong>{" "}
                   {selectedEvent.appointmentInfo.patient}
@@ -470,13 +540,13 @@ function AdminSchedule() {
                   <strong>Description:</strong>{" "}
                   {selectedEvent.appointmentInfo.description}
                 </p>
-                <div className="flex justify-end mt-4">
-                  <button
-                    onClick={() => setSelectedEvent(null)}
-                    className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-                  >
-                    Close
-                  </button>
+                <div className="flex justify-end mt-4 space-x-1">
+                <button
+                  onClick={handleSaveAndClose} // Save and close
+                  className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                >
+                  Save and Close
+                </button>
                   <button
                     onClick={handleDeleteEvent}
                     className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
@@ -489,6 +559,20 @@ function AdminSchedule() {
                   >
                     Change
                   </button>
+                  <select
+                    value={selectedEvent?.appointmentStatus}
+                    onChange={(e) =>
+                      setSelectedEvent({
+                        ...selectedEvent,
+                        appointmentStatus: e.target.value, // Update the status in state
+                      })
+                    }
+                    className="block px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="Scheduled">Scheduled</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                  </select>
                 </div>
               </>
             ) : (
