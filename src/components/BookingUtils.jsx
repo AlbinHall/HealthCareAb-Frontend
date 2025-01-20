@@ -5,12 +5,14 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export const bookAppointment = async (
   userId,
   selectedSlot,
-  selectedCaregiverId
+  selectedCaregiverId,
+  description
 ) => {
   const appointmentData = {
     patientId: userId,
     caregiverId: selectedCaregiverId,
     appointmentTime: selectedSlot.start || selectedSlot.startTime, // Fult men funkar
+    description,
   };
   console.log("AppointmentData: ", appointmentData);
   try {

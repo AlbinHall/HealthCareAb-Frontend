@@ -75,12 +75,20 @@ const UserSchedule = () => {
       return;
     }
 
+    console.log("Description: ", description);
+
     try {
-      await bookAppointment(userId, selectedSlot, selectedCaregiverId);
+      await bookAppointment(
+        userId,
+        selectedSlot,
+        selectedCaregiverId,
+        description
+      );
       setIsBookedModal(true);
       setBookingCompleted(true);
       setErrorMessage("");
       setShowModal(false);
+      setDescription("");
     } catch (error) {
       console.error("Error creating appointment:", error);
       if (error.response) {
@@ -165,7 +173,7 @@ const UserSchedule = () => {
               style={{ backgroundColor: "#fff" }}
             >
               <h2 className="mb-2">
-              Appointment regarding{" "}
+                Appointment regarding{" "}
                 <span className="font-bold">
                   {firstname} {lastname}
                 </span>
@@ -205,13 +213,13 @@ const UserSchedule = () => {
                     </option>
                   ))}
                 </select>
-                  <h2 className="mb-2">Beskrivning av bokning</h2>
-                  <textarea
-                    className="w-full p-2 border rounded"
-                    placeholder="Beskrivning"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                  />
+                <h2 className="mb-2">Beskrivning av bokning</h2>
+                <textarea
+                  className="w-full p-2 border rounded"
+                  placeholder="Beskrivning"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
               </div>
               <div className="flex justify-end space-x-2">
                 <button
