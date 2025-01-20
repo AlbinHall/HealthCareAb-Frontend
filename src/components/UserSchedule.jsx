@@ -21,6 +21,7 @@ const UserSchedule = () => {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [showNoSlotsModal, setShowNoSlotsModal] = useState(false);
   const [selectedCaregiverId, setSelectedCaregiverId] = useState(null);
+  const [description, setDescription] = useState("");
 
   useEffect(() => {
     const fetchSlots = async () => {
@@ -76,6 +77,7 @@ const UserSchedule = () => {
       patientId: userId,
       caregiverId: selectedCaregiverId,
       appointmentTime: selectedSlot.start,
+      description: description,
     };
 
     try {
@@ -210,6 +212,13 @@ const UserSchedule = () => {
                     </option>
                   ))}
                 </select>
+                  <h2 className="mb-2">Beskrivning av bokning</h2>
+                  <textarea
+                    className="w-full p-2 border rounded"
+                    placeholder="Beskrivning"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                  />
               </div>
               <div className="flex justify-end space-x-2">
                 <button
