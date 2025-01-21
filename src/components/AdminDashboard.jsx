@@ -125,8 +125,8 @@ function AdminDashboard() {
               appointments.map((appointment, index) => (
                 <li key={index} className="mb-1 p-1 bg-gray-100 rounded-lg">
                   <span className="font-medium">
-                    {appointment.patient.username} -{" "}
-                    {appointment.caregiver.username}
+                  {appointment.patient.firstname + " " + appointment.patient.lastname} -{" "}
+                  {appointment.caregiver.firstname + " " + appointment.caregiver.lastname}
                   </span>
                   <span className="block text-sm">
                     {new Date(appointment.dateTime).toLocaleString()}
