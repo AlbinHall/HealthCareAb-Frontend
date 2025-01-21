@@ -22,7 +22,7 @@ const Layout = ({ children }) => {
             <header className="bg-white text-white shadow-md">
                 <div className="container mx-auto flex justify-between items-center p-4">
                     <Link to="/">
-                        <img src={Logo} className="size-16" alt="Health Care Logo" />
+                        <img src={Logo} className="h-16" alt="Health Care Logo" />
                     </Link>
 
                     {/* Burger Menu Button for Mobile */}
