@@ -25,6 +25,8 @@ function UserDashboard() {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [selectedCaregiverId, setSelectedCaregiverId] = useState(null);
+  const [description, setDescription] = useState("");
+  const [isBookedModal, setIsBookedModal] = useState(false);
 
   // Fetch scheduled appointments
   useEffect(() => {
@@ -38,7 +40,14 @@ function UserDashboard() {
             withCredentials: true,
           }
         );
-        setNextAppointments(response.data);
+
+        const sortedAppointments = response.data.sort((a, b) => {
+          const timeA = new Date(a.appointmentTime).getTime();
+          const timeB = new Date(b.appointmentTime).getTime();
+          return timeA - timeB;
+        });
+
+        setNextAppointments(sortedAppointments);
       } catch (error) {
         console.error("Error fetching scheduled appointments:", error);
       } finally {
@@ -170,9 +179,15 @@ function UserDashboard() {
     }
 
     try {
-      await bookAppointment(userId, selectedSlot, selectedCaregiverId);
+      await bookAppointment(
+        userId,
+        selectedSlot,
+        selectedCaregiverId,
+        description
+      );
       setShowModal(false);
       getAvailableSlots();
+      setIsBookedModal(true);
     } catch (error) {
       console.error("Error creating appointment:", error);
       if (error.response) {
@@ -187,8 +202,17 @@ function UserDashboard() {
         setErrorMessage("An error occurred. Please try again.");
       }
       setShowErrorModal(true);
+      setDescription("");
+      setSelectedCaregiverId(null);
       setShowModal(false);
     }
+  };
+
+  const handleConfirmClick = () => {
+    setIsBookedModal(false);
+    setSelectedCaregiverId(null);
+    setErrorMessage("");
+    setDescription("");
   };
 
   const handleAbort = () => {
@@ -263,10 +287,6 @@ function UserDashboard() {
                       <span className="font-semibold">Time:</span>{" "}
                       {formatTime(slot.start)}
                     </p>
-                    {/* <p>
-                      <span className="font-semibold">Caregiver:</span>{" "}
-                      {slot.caregivers[0].name}
-                    </p> */}
                   </div>
                   <button
                     onClick={() => handleBookingClick(slot)}
@@ -330,7 +350,9 @@ function UserDashboard() {
                 <p className="text-red-600">{errorMessage}</p>
               )}
               <p className="mb-2">
-                {selectedSlot.caregivers.length} doctor available
+                {selectedSlot.caregivers.length === 1
+                  ? "1 doctor available"
+                  : `${selectedSlot.caregivers.length} doctors available`}
               </p>
               <select
                 className="w-full p-2 border rounded"
@@ -347,6 +369,13 @@ function UserDashboard() {
                   </option>
                 ))}
               </select>
+              <h2 className="m-2">Describe your symptoms</h2>
+              <textarea
+                className="w-full p-2 border rounded"
+                placeholder="Symptoms"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
             </div>
             <div className="flex justify-end space-x-2">
               <button
@@ -393,6 +422,48 @@ function UserDashboard() {
           </div>
         </div>
       )}
+      <div>
+        {isBookedModal && selectedCaregiverId && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="p-6 rounded-lg shadow-lg w-96 bg-gray-100">
+              <h2 className="mb-2">
+                Confirmation for{" "}
+                <span className="font-bold">
+                  {firstname} {lastname}
+                </span>
+              </h2>
+              <p>
+                <span className="font-bold">Doctor: </span>
+                {
+                  selectedSlot.caregivers.find(
+                    (caregiver) => caregiver.id === Number(selectedCaregiverId)
+                  )?.name
+                }
+              </p>
+              <p>
+                <span className="font-bold">ToD: </span>
+                {format(selectedSlot.start, "HH:mm")} -{" "}
+                {format(selectedSlot.end, "HH:mm")}
+              </p>
+              <p>
+                <span className="font-bold">Date: </span>
+                {format(selectedSlot.start, "yy-MM-dd")}
+              </p>
+              <p>
+                <span className="font-bold">Description:</span> {description}
+              </p>
+              <div className="flex justify-end space-x-2">
+                <button
+                  onClick={handleConfirmClick}
+                  className="px-4 py-2 mt-3 text-white bg-[#057d7a] rounded hover:bg-[#2fadaa]"
+                >
+                  Okay!
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
       <div>
         {showErrorModal && (
           <ErrorModal

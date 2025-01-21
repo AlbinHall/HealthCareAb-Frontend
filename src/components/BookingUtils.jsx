@@ -11,10 +11,10 @@ export const bookAppointment = async (
   const appointmentData = {
     patientId: userId,
     caregiverId: selectedCaregiverId,
-    appointmentTime: selectedSlot.start || selectedSlot.startTime, // Fult men funkar
+    appointmentTime: selectedSlot.start,
     description,
   };
-  console.log("AppointmentData: ", appointmentData);
+
   try {
     await axios.post(
       `${API_BASE_URL}/Appointment/createappointment`,
