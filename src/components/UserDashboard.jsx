@@ -206,8 +206,8 @@ function UserDashboard() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center p-4">
-      <img src={Logo} alt="Health Care Logo" className="h-80 mb-6" />
+    <div className="flex flex-col items-center justify-center px-4">
+      <img src={Logo} alt="Health Care Logo" className="h-72 mb-6" />
       <div className="card-container flex justify-evenly w-full mt-8">
         {/* Upcoming appointments card */}
         <div className="upcoming-card max-w-sm rounded px-2 overflow-hidden shadow-lg h-80 min-w-[30%] bg-gradient-to-r from-white to-gray-50 overflow-y-auto">
