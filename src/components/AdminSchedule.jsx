@@ -119,7 +119,6 @@ function AdminSchedule() {
   const [error, setError] = useState(null);
   const [availabilities, setAvailabilities] = useState([]);
   const [selectedNewAvailability, setSelectedNewAvailability] = useState(null);
-  const [appointmentStatus, setAppointmentStatus] = useState("");
 
   useEffect(() => {
     const fetchAvailability = async () => {
@@ -128,14 +127,40 @@ function AdminSchedule() {
           const availability = await getAvailability(authState);
 
           if (Array.isArray(availability) && availability.length > 0) {
-            const mappedEvents = availability.map((event) => ({
-              id: event.id,
-              title: event.isBooked ? "Booked" : "Available",
-              isBooked: event.isBooked,
-              start: new Date(event.startTime),
-              end: new Date(event.endTime),
-              appointmentId: event.appointmentId, // Ensure this is included
-            }));
+            const mappedEvents = await Promise.all(
+              availability.map(async (event) => {
+                if (event.isBooked && event.appointmentId) {
+                  try {
+                    const appointmentData = await getAppointmentById(
+                      event.appointmentId
+                    );
+
+                    const status =
+                      statusMap[appointmentData.status] || "Unknown";
+
+                    return {
+                      ...event,
+                      title: status,
+                      start: new Date(event.startTime),
+                      end: new Date(event.endTime),
+                      appointmentId: event.appointmentId,
+                    };
+                  } catch (error) {
+                    console.error("Error fetching appointment data:", error);
+                  }
+                } else {
+                  // If sloty is available
+                  return {
+                    ...event,
+                    title: "Available",
+                    start: new Date(event.startTime),
+                    end: new Date(event.endTime),
+                    appointmentId: event.appointmentId,
+                  };
+                }
+              })
+            );
+
             setEvents(mappedEvents);
           } else {
             setEvents([]);
@@ -150,7 +175,8 @@ function AdminSchedule() {
       }
     };
     fetchAvailability();
-  }, [authState]);
+  }, [authState, events]);
+
   const handleSelectEvent = async (event) => {
     if (event.isBooked && event.appointmentId) {
       try {
@@ -181,7 +207,6 @@ function AdminSchedule() {
       });
     }
   };
-  useEffect(() => {}, [selectedEvent]);
 
   const eventPropGetter = (event) => {
     const style = {
