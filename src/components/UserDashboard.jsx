@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useAuth } from "../hooks/useAuth";
-import Logo from "../assets/health_care_good_logo.png";
+import Logo from "../assets/health_care_logo.svg";
 import { format, set } from "date-fns";
 import { bookAppointment } from "./BookingUtils";
 import ErrorModal from "./ErrorModal";
@@ -238,7 +238,7 @@ function UserDashboard() {
           <h3 className="text-xl font-semibold mb-4 sticky top-0 bg-gradient-to-r from-white to-gray-50 py-2 z-10 shadow-sm border-b border-gray-200">
             Your upcoming appointments
           </h3>
-          <div className="max-h-96 overflow-y-auto"> {/* Add max-height and overflow-y */}
+          <div className="max-h-80 overflow-y-auto"> {/* Add max-height and overflow-y */}
             {nextAppointments.length === 0 ? (
               <p className="font-bold text-lg mb-4">No upcoming appointments</p>
             ) : (
@@ -276,7 +276,7 @@ function UserDashboard() {
           <h3 className="text-xl font-semibold mb-4 sticky top-0 bg-gradient-to-r from-white to-gray-50 py-2 z-10 shadow-sm border-b border-gray-200">
             Today's available times
           </h3>
-          <div className="max-h-96 overflow-y-auto"> {/* Add max-height and overflow-y */}
+          <div className="max-h-80 overflow-y-auto"> {/* Add max-height and overflow-y */}
             {availableSlots.length === 0 ? (
               <p className="font-bold text-lg mb-4">No available slots</p>
             ) : (
@@ -310,7 +310,7 @@ function UserDashboard() {
           <h3 className="text-xl font-semibold mb-4 sticky top-0 bg-gradient-to-r from-white to-gray-50 py-2 z-10 shadow-sm border-b border-gray-200">
             Historic appointments
           </h3>
-          <div className="max-h-96 overflow-y-auto"> {/* Add max-height and overflow-y */}
+          <div className="max-h-80 overflow-y-auto"> {/* Add max-height and overflow-y */}
             {historicAppointments.length === 0 ? (
               <p className="font-bold text-lg mb-4">No historic appointments</p>
             ) : (
