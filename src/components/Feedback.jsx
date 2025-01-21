@@ -30,8 +30,6 @@ export default function Feedback({ appointmentId, onClose, onFeedbackSubmit }) {
         setComment('');
         setRating(1);
 
-        alert("Feedback submitted successfully!");
-
         onFeedbackSubmit(); //Refetch data in History page after feedback is submitted
 
         onClose(); //Close the modal after submission
@@ -58,7 +56,7 @@ export default function Feedback({ appointmentId, onClose, onFeedbackSubmit }) {
                             id="comment"
                             value={comment}
                             onChange={(e) => setComment(e.target.value)}
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:border-[#057d7a]"
                             rows="4"
                             placeholder="Enter your feedback here..."
                             required
@@ -78,7 +76,7 @@ export default function Feedback({ appointmentId, onClose, onFeedbackSubmit }) {
                                 const value = Math.min(Math.max(parseInt(e.target.value, 10), 1), 5); // Ensure rating is between 1 and 5
                                 setRating(value || 1);
                             }}
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:border-[#057d7a]"
                             min="1"
                             max="5"
                             required
@@ -87,14 +85,14 @@ export default function Feedback({ appointmentId, onClose, onFeedbackSubmit }) {
 
                     <button
                         type="submit"
-                        className="w-full px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                        className="w-full px-4 py-2 bg-[#057d7a] text-white rounded-md hover:bg-[#2fadaa]"
                     >
                         Submit Feedback
                     </button>
                 </form>
                 <button
                     onClick={onClose}
-                    className="mt-4 w-full px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                    className="mt-4 w-full px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
                 >
                     Close
                 </button>
