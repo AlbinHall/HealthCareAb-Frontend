@@ -231,13 +231,13 @@ function AdminSchedule() {
       return;
     }
 
-    setNewEvent({ title: "", start: adjustedStart, end: adjustedEnd });
+    setNewEvent({ title: "Available", start: adjustedStart, end: adjustedEnd });
     setIsModalOpen(true);
     setTimeError("");
   };
 
   const handleAddEvent = async () => {
-    if (newEvent.title && newEvent.start && newEvent.end) {
+    if (newEvent.start && newEvent.end) {
       const startHour = moment(newEvent.start).hour();
       const endHour = moment(newEvent.end).hour();
 
@@ -250,7 +250,6 @@ function AdminSchedule() {
         StartTime: newEvent.start,
         EndTime: newEvent.end,
         IsAvailable: true,
-        Title: newEvent.title,
       };
 
       try {
@@ -263,7 +262,7 @@ function AdminSchedule() {
         // 3. Mappa och uppdatera events-tillståndet
         const mappedEvents = updatedAvailability.map((event) => ({
           id: event.id,
-          title: event.Title || "Available", // Använd en standardtitel om Title saknas
+          title: "Available", // Använd en standardtitel om Title saknas
           isBooked: event.isBooked || false, // Ensure isBooked is correctly set
           start: new Date(event.startTime),
           end: new Date(event.endTime),
@@ -272,7 +271,7 @@ function AdminSchedule() {
 
         setEvents(mappedEvents); // Uppdatera events-tillståndet
         setIsModalOpen(false); // Stäng modalen
-        setNewEvent({ title: "", start: "", end: "" }); // Återställ formuläret
+        setNewEvent({ start: "", end: "" }); // Återställ formuläret
       } catch (error) {
         console.error("Error creating availability:", error);
       }
@@ -285,7 +284,6 @@ function AdminSchedule() {
         StartTime: selectedEvent.start,
         EndTime: selectedEvent.end,
         IsAvailable: true,
-        Title: selectedEvent.title,
       };
 
       try {
@@ -449,15 +447,6 @@ function AdminSchedule() {
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
             <h3 className="text-xl font-bold mb-4">Add availability</h3>
-            <input
-              type="text"
-              placeholder="Titel"
-              value={newEvent.title}
-              onChange={(e) =>
-                setNewEvent({ ...newEvent, title: e.target.value })
-              }
-              className="w-full p-2 border border-gray-300 rounded mb-4"
-            />
             <label className="block mb-2">Start date and time:</label>
             <input
               type="datetime-local"
@@ -578,17 +567,6 @@ function AdminSchedule() {
             ) : (
               <>
                 <h3 className="text-xl font-bold mb-4">Change availability</h3>
-                <input
-                  type="text"
-                  value={selectedEvent.title}
-                  onChange={(e) =>
-                    setSelectedEvent({
-                      ...selectedEvent,
-                      title: e.target.value,
-                    })
-                  }
-                  className="w-full p-2 border border-gray-300 rounded mb-4"
-                />
                 <label className="block mb-2">Start date and time:</label>
                 <input
                   type="datetime-local"
