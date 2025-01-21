@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useAuth } from "../hooks/useAuth";
-import Logo from "../assets/health_care_logo.svg";
+import Logo from "../assets/health_care_good_logo.png";
 import { format, set } from "date-fns";
 import { bookAppointment } from "./BookingUtils";
 import ErrorModal from "./ErrorModal";
@@ -232,9 +232,9 @@ function UserDashboard() {
   return (
     <div className="flex flex-col items-center justify-center px-4">
       <img src={Logo} alt="Health Care Logo" className="h-72 mb-6" />
-      <div className="card-container flex justify-evenly w-full mt-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
         {/* Upcoming appointments card */}
-        <div className="upcoming-card max-w-sm rounded px-2 overflow-hidden shadow-lg h-80 min-w-[30%] bg-gradient-to-r from-white to-gray-50 overflow-y-auto">
+        <div className="bg-white shadow-lg rounded-lg p-4">
           <h3 className="text-xl font-semibold mb-4 sticky top-0 bg-gradient-to-r from-white to-gray-50 py-2 z-10 shadow-sm border-b border-gray-200">
             Your upcoming appointments
           </h3>
@@ -269,7 +269,7 @@ function UserDashboard() {
           )}
         </div>
         {/* Today's available appointments card */}
-        <div className="slots-card max-w-sm rounded px-2 overflow-hidden shadow-lg h-80 min-w-[30%] bg-gradient-to-r from-white to-gray-50 overflow-y-auto">
+        <div className="bg-white shadow-lg rounded-lg p-4 hover:shadow-xl transition-shadow duration-300">
           <h3 className="text-xl font-semibold mb-4 sticky top-0 bg-gradient-to-r from-white to-gray-50 py-2 z-10 shadow-sm border-b border-gray-200">
             Today's available times
           </h3>
@@ -300,7 +300,7 @@ function UserDashboard() {
           )}
         </div>
         {/* History card */}
-        <div className="history-card max-w-sm rounded px-2 overflow-hidden shadow-lg h-80 min-w-[30%] bg-gradient-to-r from-white to-gray-50 overflow-y-auto">
+        <div className="bg-white shadow-lg rounded-lg p-4">
           <h3 className="text-xl font-semibold mb-4 sticky top-0 bg-gradient-to-r from-white to-gray-50 py-2 z-10 shadow-sm border-b border-gray-200">
             Historic appointments
           </h3>
