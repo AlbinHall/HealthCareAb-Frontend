@@ -1,6 +1,6 @@
 import { useAuth } from "../hooks/useAuth";
 import React, { useEffect, useState } from "react";
-import Logo from "../assets/health_care_good_logo.png";
+import Logo from "../assets/health_care_logo.svg";
 import axios from "axios";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -116,8 +116,8 @@ function AdminDashboard() {
   const progress = (feedbackSummary.averageRating / 5) * 100;
 
   return (
-    <div className="flex flex-col items-center justify-center p-4">
-      <img src={Logo} alt="Health Care Logo" className="h-80 mb-6" />
+    <div className="flex flex-col items-center justify-center px-4">
+      <img src={Logo} alt="Health Care Logo" className="h-72 mb-6" />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
         {/* Card 1: Appointments */}
         <div className="bg-white shadow-lg rounded-lg p-4">
