@@ -89,7 +89,6 @@ function AdminDashboard() {
 
           Promise.all(fetchAppointments)
             .then((appointments) => {
-              console.log("Fetched Appointments: ", appointments);
               setAppointments(appointments);
             })
             .catch((error) => {
@@ -103,7 +102,6 @@ function AdminDashboard() {
       // Fetch feedback summary for the caregiver
       getfeedbackbyuserid(authState)
         .then((data) => {
-          console.log("Fetched Feedback Summary: ", data);
           setFeedbackSummary(data);
         })
         .catch((error) => {

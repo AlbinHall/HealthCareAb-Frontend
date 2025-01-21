@@ -26,8 +26,6 @@ function Login() {
         withCredentials: true,
       });
 
-      console.log("Login successful:", JSON.stringify(response.data));
-
       if (
         !response.data ||
         !response.data.username ||
@@ -51,10 +49,8 @@ function Login() {
       });
 
       if (roles.includes("Admin")) {
-        console.log("admin role");
         navigate("/admin/dashboard", { replace: true });
       } else {
-        console.log("user");
         navigate("/user/dashboard", { replace: true });
       }
     } catch (error) {

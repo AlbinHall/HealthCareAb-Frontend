@@ -14,7 +14,7 @@ export const bookAppointment = async (
     appointmentTime: selectedSlot.start || selectedSlot.startTime, // Fult men funkar
     description,
   };
-  console.log("AppointmentData: ", appointmentData);
+
   try {
     await axios.post(
       `${API_BASE_URL}/Appointment/createappointment`,

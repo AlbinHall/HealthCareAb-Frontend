@@ -75,8 +75,6 @@ const UserSchedule = () => {
       return;
     }
 
-    console.log("Description: ", description);
-
     try {
       await bookAppointment(
         userId,

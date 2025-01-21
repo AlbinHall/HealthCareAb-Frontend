@@ -65,7 +65,6 @@ const deleteAvailability = async (id) => {
 };
 
 const getAppointmentById = async (appointmentId) => {
-  console.log("Appointment ID:", appointmentId); // Debugging line
   try {
     const response = await axios.get(
       `${API_BASE_URL}/appointment/getappointmentbyid/${appointmentId}`,
@@ -73,7 +72,6 @@ const getAppointmentById = async (appointmentId) => {
         withCredentials: true,
       }
     );
-    console.log("Fetched Appointment:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching appointment:", error);
@@ -89,8 +87,6 @@ const updateAppointment = async (appointmentId, caregiverid, newavailabilityid, 
     appointmenttime: newStartTime,
     Status: 0,
   };
-
-  console.log("Payload being sent:", payload); // Debugging line
 
   try {
     const response = await axios.put(
@@ -172,10 +168,8 @@ function AdminSchedule() {
         appointmentStatus: "Scheduled", // Default status for non-booked events
       });
     }
-    console.log("Selected Event:", event); // Debug log
   };
   useEffect(() => {
-    console.log("Selected Event Updated:", selectedEvent); // Debug log
   }, [selectedEvent]);
 
   const eventPropGetter = (event) => {
@@ -402,8 +396,6 @@ function AdminSchedule() {
       appointmenttime: selectedEvent.start.toISOString(),
       Status: statusMap[selectedEvent.appointmentStatus],
     };
-
-    console.log("Payload being sent:", payload);
 
     try {
       const response = await axios.put(

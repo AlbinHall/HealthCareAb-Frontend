@@ -52,8 +52,6 @@ const History = () => {
   const currentItems = History.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(History.length / itemsPerPage);
 
-  console.log(currentItems);
-
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   if (loading) {
