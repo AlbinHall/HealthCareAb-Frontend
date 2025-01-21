@@ -213,10 +213,10 @@ const UserSchedule = () => {
                     </option>
                   ))}
                 </select>
-                <h2 className="mb-2">Beskrivning av bokning</h2>
+                <h2 className="m-2">Describe your symptoms</h2>
                 <textarea
                   className="w-full p-2 border rounded"
-                  placeholder="Beskrivning"
+                  placeholder="Symptoms"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                 />
