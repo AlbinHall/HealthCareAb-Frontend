@@ -52,8 +52,6 @@ const History = () => {
   const currentItems = History.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(History.length / itemsPerPage);
 
-  console.log(currentItems);
-
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   if (loading) {
@@ -82,7 +80,7 @@ const History = () => {
             History
           </h1>
           <p className="mt-2 text-center text-gray-600">
-            View your past appointments and medical records
+            View your past appointments and submit feedback
           </p>
         </div>
       </div>
@@ -93,7 +91,7 @@ const History = () => {
               key={journal.id}
               className="bg-white rounded-xl shadow-lg hover:shadow-xl border border-gray-200 overflow-hidden transform hover:-translate-y-1 transition-transform duration-300"
             >
-              <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
+              <div className="bg-[#057d7a] px-6 py-4">
                 <h2 className="text-xl font-semibold text-white">
                   Appointment #{journal.id}
                 </h2>
@@ -135,7 +133,7 @@ const History = () => {
                   <button
                     disabled={journal.hasFeedback}
                     onClick={() => handleFeedbackClick(journal.id)}
-                    className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled disabled:bg-gray-500">
+                    className="mt-2 px-4 py-2 bg-[#057d7a] text-white rounded-md hover:bg-[#2fadaa] disabled disabled:bg-gray-500">
                     {journal.hasFeedback ? "Feedback Submitted" : "Submit Feedback"}
                   </button>
                 </div>
@@ -157,7 +155,7 @@ const History = () => {
                 key={index}
                 onClick={() => paginate(index + 1)}
                 className={`px-4 py-2 rounded-md ${currentPage === index + 1
-                  ? 'bg-blue-500 text-white'
+                  ? 'bg-[#057d7a] text-white'
                   : 'bg-white text-gray-700 hover:bg-gray-50'
                   } border border-gray-300 transition-colors duration-200`}
               >

@@ -62,7 +62,6 @@ const Register = () => {
       };
 
       const response = await axios.post(`${apiUrl}/auth/register`, payload);
-      console.log("Register successful:", response.data);
       setSuccessMessage(
         "User registered successfully! Redirecting to login page..."
       );
