@@ -175,9 +175,10 @@ function AdminSchedule() {
   const eventPropGetter = (event) => {
     const style = {
       backgroundColor: event.isBooked ? "#057d7a" : "darkgray",
-      color: "white",
+      color: event.isBooked ? "white" : "black",
       borderRadius: "5px",
       border: "none",
+      'margin-left': "5px",
     };
 
     return {
@@ -320,12 +321,12 @@ function AdminSchedule() {
       console.error("No selected event or appointment ID found.");
       return;
     }
-  
+
     try {
       // Fetch the user's availabilities
       const availabilityList = await getAvailability(authState);
       const availableSlots = availabilityList.filter((slot) => !slot.isBooked);
-  
+
       // Update the availabilities state
       setAvailabilities(availableSlots);
       setIsChangeModalOpen(true);
@@ -333,13 +334,13 @@ function AdminSchedule() {
       console.error("Error fetching availabilities:", error);
     }
   };
-  
+
   const handleSaveNewAppointmentTime = async () => {
     if (!selectedNewAvailability || !selectedEvent) {
       setError("Please select a new time slot.");
       return;
     }
-  
+
     try {
       // Call the updateAppointmentTime function
       await updateAppointment(
@@ -351,7 +352,7 @@ function AdminSchedule() {
       );
       // Fetch the updated availability list
       const updatedAvailability = await getAvailability(authState);
-  
+
       // Map and update the events state
       const mappedEvents = updatedAvailability.map((event) => ({
         id: event.id,
@@ -361,10 +362,10 @@ function AdminSchedule() {
         end: new Date(event.endTime),
         appointmentId: event.appointmentId,
       }));
-  
+
       // Update the events state
       setEvents(mappedEvents);
-  
+
       // Close the modal and reset states
       setIsChangeModalOpen(false);
       setSelectedEvent(null);
@@ -391,8 +392,8 @@ function AdminSchedule() {
     const payload = {
       AppointmentId: selectedEvent.appointmentId,
       caregiverid: authState.userId,
-      newavailabilityid: selectedEvent.id, 
-      oldavailabilityid: selectedEvent.id, 
+      newavailabilityid: selectedEvent.id,
+      oldavailabilityid: selectedEvent.id,
       appointmenttime: selectedEvent.start.toISOString(),
       Status: statusMap[selectedEvent.appointmentStatus],
     };
@@ -409,7 +410,7 @@ function AdminSchedule() {
     } catch (error) {
       console.error("Error updating appointment status:", error);
       if (error.response) {
-        console.error("Backend response:", error.response.data); 
+        console.error("Backend response:", error.response.data);
       }
       throw error;
     }
@@ -431,7 +432,7 @@ function AdminSchedule() {
     1: "Completed",
     2: "Cancelled",
   };
-  
+
   return (
     <>
       {/* Add Event Modal */}
@@ -522,12 +523,12 @@ function AdminSchedule() {
                   {selectedEvent.appointmentInfo.description}
                 </p>
                 <div className="flex justify-end mt-4 space-x-1">
-                <button
-                  onClick={handleSaveAndClose} // Save and close
-                  className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-                >
-                  Save and Close
-                </button>
+                  <button
+                    onClick={handleSaveAndClose} // Save and close
+                    className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                  >
+                    Save and Close
+                  </button>
                   <button
                     onClick={handleDeleteEvent}
                     className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
@@ -610,51 +611,51 @@ function AdminSchedule() {
           </div>
         </div>
       )}
- {isChangeModalOpen && (
-  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-    <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-      <h3 className="text-xl font-bold mb-4">Change Appointment Time</h3>
-      <select
-        value={selectedNewAvailability ? selectedNewAvailability.id : ""}
-        onChange={(e) => {
-          const selectedId = e.target.value;
-          const selected = availabilities.find(
-            (avail) => avail.id === Number(selectedId)
-          );
-          setSelectedNewAvailability(selected);
-        }}
-        className="w-full p-2 border border-gray-300 rounded mb-4"
-      >
-        <option value="">Select a new time slot</option>
-        {availabilities.map((avail) => (
-          <option key={avail.id} value={avail.id}>
-            {moment(avail.startTime).format("YYYY-MM-DD HH:mm")} -{" "}
-            {moment(avail.endTime).format("HH:mm")}
-          </option>
-        ))}
-      </select>
-      {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-      <div className="flex justify-end space-x-2">
-        <button
-          onClick={() => {
-            setIsChangeModalOpen(false);
-            setSelectedNewAvailability(null); // Reset selected availability
-            setError(null); // Clear any errors
-          }}
-          className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={handleSaveNewAppointmentTime}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Save
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+      {isChangeModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+            <h3 className="text-xl font-bold mb-4">Change Appointment Time</h3>
+            <select
+              value={selectedNewAvailability ? selectedNewAvailability.id : ""}
+              onChange={(e) => {
+                const selectedId = e.target.value;
+                const selected = availabilities.find(
+                  (avail) => avail.id === Number(selectedId)
+                );
+                setSelectedNewAvailability(selected);
+              }}
+              className="w-full p-2 border border-gray-300 rounded mb-4"
+            >
+              <option value="">Select a new time slot</option>
+              {availabilities.map((avail) => (
+                <option key={avail.id} value={avail.id}>
+                  {moment(avail.startTime).format("YYYY-MM-DD HH:mm")} -{" "}
+                  {moment(avail.endTime).format("HH:mm")}
+                </option>
+              ))}
+            </select>
+            {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={() => {
+                  setIsChangeModalOpen(false);
+                  setSelectedNewAvailability(null); // Reset selected availability
+                  setError(null); // Clear any errors
+                }}
+                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveNewAppointmentTime}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Calendar Component */}
       <MyCalendar
         selectable={true}

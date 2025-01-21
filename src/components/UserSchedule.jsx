@@ -122,15 +122,12 @@ const UserSchedule = () => {
   };
 
   const eventStyleGetter = (event) => {
-    let backgroundColor = event.color || "#fff"; // Standardfärg om ingen färg finns
     let style = {
-      backgroundColor,
-      borderRadius: "12px",
-      opacity: 0.8,
+      backgroundColor: event.color || "#fff", // Standardfärg om ingen färg finns,
+      borderRadius: "5px",
       color: "white",
-      border: "1px solid #ddd",
-      alignItems: "center",
-      marginLeft: "5px",
+      border: "none",
+      'margin-left': "5px",
     };
     return {
       style,
@@ -138,14 +135,7 @@ const UserSchedule = () => {
   };
 
   return (
-    <div>
-      <MyCalendar
-        selectTable={true}
-        events={slots}
-        onSelectSlot={handleSelectSlot}
-        onSelectEvent={handleEventClick}
-        eventPropGetter={eventStyleGetter}
-      />
+    <>
       <div>
         {showNoSlotsModal && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -289,7 +279,14 @@ const UserSchedule = () => {
           />
         )}
       </div>
-    </div>
+      <MyCalendar
+        selectTable={true}
+        events={slots}
+        onSelectSlot={handleSelectSlot}
+        onSelectEvent={handleEventClick}
+        eventPropGetter={eventStyleGetter}
+      />
+    </>
   );
 };
 
