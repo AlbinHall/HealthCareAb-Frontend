@@ -232,94 +232,102 @@ function UserDashboard() {
   return (
     <div className="flex flex-col items-center justify-center px-4">
       <img src={Logo} alt="Health Care Logo" className="h-72 mb-6" />
-      <div className="card-container flex justify-evenly w-full mt-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
         {/* Upcoming appointments card */}
-        <div className="upcoming-card max-w-sm rounded px-2 overflow-hidden shadow-lg h-80 min-w-[30%] bg-gradient-to-r from-white to-gray-50 overflow-y-auto">
+        <div className="bg-white shadow-lg rounded-lg p-4">
           <h3 className="text-xl font-semibold mb-4 sticky top-0 bg-gradient-to-r from-white to-gray-50 py-2 z-10 shadow-sm border-b border-gray-200">
             Your upcoming appointments
           </h3>
-          {nextAppointments.length === 0 ? (
-            <p className="font-bold text-lg mb-4">No upcoming appointments</p>
-          ) : (
-            <ul>
-              {nextAppointments.map((appointment) => (
-                <li
-                  key={appointment.id}
-                  className="mb-2 p-1 bg-gray-100 rounded-lg flex justify-between items-center hover:bg-gray-200"
-                >
-                  <div>
-                    <p>
-                      <span className="font-semibold">Time:</span>{" "}
-                      {formatTime(appointment.appointmentTime)}
-                    </p>
-                    <p>
-                      <span className="font-semibold">Caregiver:</span>{" "}
-                      {appointment.caregiverName}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => handleCancelAppointment(appointment)}
-                    className="px-3 py-2 bg-[#ff3f34] text-white rounded hover:bg-[#ff5e57]"
+          <div className="max-h-80 overflow-y-auto"> {/* Add max-height and overflow-y */}
+            {nextAppointments.length === 0 ? (
+              <p className="font-bold text-lg mb-4">No upcoming appointments</p>
+            ) : (
+              <ul>
+                {nextAppointments.map((appointment) => (
+                  <li
+                    key={appointment.id}
+                    className="mb-2 p-1 bg-gray-100 rounded-lg flex justify-between items-center hover:bg-gray-200"
                   >
-                    Cancel
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
+                    <div>
+                      <p>
+                        <span className="font-semibold">Time:</span>{" "}
+                        {formatTime(appointment.appointmentTime)}
+                      </p>
+                      <p>
+                        <span className="font-semibold">Caregiver:</span>{" "}
+                        {appointment.caregiverName}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleCancelAppointment(appointment)}
+                      className="px-3 py-2 bg-[#ff3f34] text-white rounded hover:bg-[#ff5e57]"
+                    >
+                      Cancel
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
+
         {/* Today's available appointments card */}
-        <div className="slots-card max-w-sm rounded px-2 overflow-hidden shadow-lg h-80 min-w-[30%] bg-gradient-to-r from-white to-gray-50 overflow-y-auto">
+        <div className="bg-white shadow-lg rounded-lg p-4 hover:shadow-xl transition-shadow duration-300">
           <h3 className="text-xl font-semibold mb-4 sticky top-0 bg-gradient-to-r from-white to-gray-50 py-2 z-10 shadow-sm border-b border-gray-200">
             Today's available times
           </h3>
-          {availableSlots.length === 0 ? (
-            <p className="font-bold text-lg mb-4">No available slots</p>
-          ) : (
-            <ul>
-              {availableSlots.map((slot) => (
-                <li
-                  key={slot.id}
-                  className="mb-2 p-1 bg-gray-100 rounded-lg flex justify-between items-center hover:bg-gray-200"
-                >
-                  <div>
-                    <p>
-                      <span className="font-semibold">Time:</span>{" "}
-                      {formatTime(slot.start)}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => handleBookingClick(slot)}
-                    className="px-3 py-2 bg-[#057d7a] text-white rounded hover:bg-[#2fadaa]"
+          <div className="max-h-80 overflow-y-auto"> {/* Add max-height and overflow-y */}
+            {availableSlots.length === 0 ? (
+              <p className="font-bold text-lg mb-4">No available slots</p>
+            ) : (
+              <ul>
+                {availableSlots.map((slot) => (
+                  <li
+                    key={slot.id}
+                    className="mb-2 p-1 bg-gray-100 rounded-lg flex justify-between items-center hover:bg-gray-200"
                   >
-                    Book
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
+                    <div>
+                      <p>
+                        <span className="font-semibold">Time:</span>{" "}
+                        {formatTime(slot.start)}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleBookingClick(slot)}
+                      className="px-3 py-2 bg-[#057d7a] text-white rounded hover:bg-[#2fadaa]"
+                    >
+                      Book
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
+
         {/* History card */}
-        <div className="history-card max-w-sm rounded px-2 overflow-hidden shadow-lg h-80 min-w-[30%] bg-gradient-to-r from-white to-gray-50 overflow-y-auto">
+        <div className="bg-white shadow-lg rounded-lg p-4">
           <h3 className="text-xl font-semibold mb-4 sticky top-0 bg-gradient-to-r from-white to-gray-50 py-2 z-10 shadow-sm border-b border-gray-200">
             Historic appointments
           </h3>
-          {historicAppointments.length === 0 ? (
-            <p className="font-bold text-lg mb-4">No historic appointments</p>
-          ) : (
-            <ul>
-              {historicAppointments.map((appointment) => (
-                <li
-                  key={appointment.id}
-                  className="mb-1 p-1 bg-gray-100 rounded-lg"
-                >
-                  <p>Caregiver: {appointment.caregiverName}</p>
-                  <p>Patient: {appointment.patientName}</p>
-                  <p>Time: {formatTime(appointment.dateTime)}</p>
-                </li>
-              ))}
-            </ul>
-          )}
+          <div className="max-h-80 overflow-y-auto"> {/* Add max-height and overflow-y */}
+            {historicAppointments.length === 0 ? (
+              <p className="font-bold text-lg mb-4">No historic appointments</p>
+            ) : (
+              <ul>
+                {historicAppointments.map((appointment) => (
+                  <li
+                    key={appointment.id}
+                    className="mb-1 p-1 bg-gray-100 rounded-lg"
+                  >
+                    <p>Caregiver: {appointment.caregiverName}</p>
+                    <p>Patient: {appointment.patientName}</p>
+                    <p>Time: {formatTime(appointment.dateTime)}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
       </div>
       {showModal && selectedSlot && (
