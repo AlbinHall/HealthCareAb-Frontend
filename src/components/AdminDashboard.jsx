@@ -113,6 +113,12 @@ function AdminDashboard() {
   // Calculate progress for the rating circle
   const progress = (feedbackSummary.averageRating / 5) * 100;
 
+  const statusMap = {
+    0: "Scheduled",
+    1: "Completed",
+    2: "Cancelled",
+  };
+
   return (
     <div className="flex flex-col items-center justify-center px-4">
       <img src={Logo} alt="Health Care Logo" className="h-72 mb-6" />
@@ -132,7 +138,7 @@ function AdminDashboard() {
                     {new Date(appointment.dateTime).toLocaleString()}
                   </span>
                   <span className="block text-sm">
-                    Status: {appointment.status === 0 ? "Scheduled" : "Other"}
+                    Status: {statusMap[appointment.status]}
                   </span>
                 </li>
               ))

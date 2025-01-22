@@ -78,7 +78,13 @@ const getAppointmentById = async (appointmentId) => {
     throw error;
   }
 };
-const updateAppointment = async (appointmentId, caregiverid, newavailabilityid, oldavailabilityid, newStartTime) => {
+const updateAppointment = async (
+  appointmentId,
+  caregiverid,
+  newavailabilityid,
+  oldavailabilityid,
+  newStartTime
+) => {
   const payload = {
     AppointmentId: appointmentId,
     caregiverid: caregiverid,
@@ -113,7 +119,6 @@ function AdminSchedule() {
   const [error, setError] = useState(null);
   const [availabilities, setAvailabilities] = useState([]);
   const [selectedNewAvailability, setSelectedNewAvailability] = useState(null);
-  const [appointmentStatus, setAppointmentStatus] = useState("");
 
   useEffect(() => {
     const fetchAvailability = async () => {
@@ -122,14 +127,40 @@ function AdminSchedule() {
           const availability = await getAvailability(authState);
 
           if (Array.isArray(availability) && availability.length > 0) {
-            const mappedEvents = availability.map((event) => ({
-              id: event.id,
-              title: event.isBooked ? "Booked" : "Available",
-              isBooked: event.isBooked,
-              start: new Date(event.startTime),
-              end: new Date(event.endTime),
-              appointmentId: event.appointmentId, // Ensure this is included
-            }));
+            const mappedEvents = await Promise.all(
+              availability.map(async (event) => {
+                if (event.isBooked && event.appointmentId) {
+                  try {
+                    const appointmentData = await getAppointmentById(
+                      event.appointmentId
+                    );
+
+                    const status =
+                      statusMap[appointmentData.status] || "Unknown";
+
+                    return {
+                      ...event,
+                      title: status,
+                      start: new Date(event.startTime),
+                      end: new Date(event.endTime),
+                      appointmentId: event.appointmentId,
+                    };
+                  } catch (error) {
+                    console.error("Error fetching appointment data:", error);
+                  }
+                } else {
+                  // If sloty is available
+                  return {
+                    ...event,
+                    title: "Available",
+                    start: new Date(event.startTime),
+                    end: new Date(event.endTime),
+                    appointmentId: event.appointmentId,
+                  };
+                }
+              })
+            );
+
             setEvents(mappedEvents);
           } else {
             setEvents([]);
@@ -144,7 +175,8 @@ function AdminSchedule() {
       }
     };
     fetchAvailability();
-  }, [authState]);
+  }, [authState, events]);
+
   const handleSelectEvent = async (event) => {
     if (event.isBooked && event.appointmentId) {
       try {
@@ -152,8 +184,14 @@ function AdminSchedule() {
         setSelectedEvent({
           ...event,
           appointmentInfo: {
-            patient: appointmentInfo.patient.firstname + " " + appointmentInfo.patient.lastname,
-            caregiver: appointmentInfo.caregiver.firstname + " " + appointmentInfo.caregiver.lastname,
+            patient:
+              appointmentInfo.patient.firstname +
+              " " +
+              appointmentInfo.patient.lastname,
+            caregiver:
+              appointmentInfo.caregiver.firstname +
+              " " +
+              appointmentInfo.caregiver.lastname,
             description: appointmentInfo.description,
             appointmentStatus: appointmentInfo.status,
           },
@@ -169,8 +207,6 @@ function AdminSchedule() {
       });
     }
   };
-  useEffect(() => {
-  }, [selectedEvent]);
 
   const eventPropGetter = (event) => {
     const style = {
@@ -348,7 +384,7 @@ function AdminSchedule() {
         authState.userId, //caregiverid
         selectedNewAvailability.id,
         selectedEvent.id, //oldavailabilityid
-        selectedNewAvailability.startTime,
+        selectedNewAvailability.startTime
       );
       // Fetch the updated availability list
       const updatedAvailability = await getAvailability(authState);
@@ -500,7 +536,12 @@ function AdminSchedule() {
               <>
                 <div className="flex justify-between items-center">
                   <h4 className="text-lg font-semibold mb-2">Booked time</h4>
-                  <button className="mr-2" onClick={() => setSelectedEvent(null)}>❌</button>
+                  <button
+                    className="mr-2"
+                    onClick={() => setSelectedEvent(null)}
+                  >
+                    ❌
+                  </button>
                 </div>
                 <p>
                   <strong>Caretaker:</strong>{" "}
@@ -522,6 +563,10 @@ function AdminSchedule() {
                   <strong>Description:</strong>{" "}
                   {selectedEvent.appointmentInfo.description}
                 </p>
+                <p>
+                  <strong>Status:</strong>{" "}
+                  {statusMap[selectedEvent.appointmentInfo.appointmentStatus]}
+                </p>
                 <div className="flex justify-end mt-4 space-x-1">
                   <button
                     onClick={handleSaveAndClose} // Save and close
@@ -542,7 +587,11 @@ function AdminSchedule() {
                     Change
                   </button>
                   <select
-                    value={selectedEvent?.appointmentStatus}
+                    defaultValue={
+                      statusMap[
+                        selectedEvent?.appointmentInfo.appointmentStatus
+                      ]
+                    }
                     onChange={(e) =>
                       setSelectedEvent({
                         ...selectedEvent,

@@ -22,19 +22,17 @@ const Register = () => {
     const { name, value } = e.target;
 
     // Prevent numbers & symbols in firstname and lastname
-    if (name === 'firstname' || name === 'lastname') {
-      const lettersOnly = value.replace(/[^A-Za-zåäöÅÄÖ]/g, '');
+    if (name === "firstname" || name === "lastname") {
+      const lettersOnly = value.replace(/[^A-Za-zåäöÅÄÖ]/g, "");
       setFormData({ ...formData, [name]: lettersOnly });
-    } 
-    else 
-    {
+    } else {
       setFormData({ ...formData, [name]: value });
     }
   };
 
-
   const handleRegister = async (e) => {
     e.preventDefault();
+    setErrorMessage("");
 
     if (formData.password !== formData.confirmPassword) {
       setErrorMessage("Passwords do not match");
