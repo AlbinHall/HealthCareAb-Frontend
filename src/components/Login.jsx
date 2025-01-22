@@ -26,13 +26,13 @@ function Login() {
         withCredentials: true,
       });
 
-      console.log("Login successful:", JSON.stringify(response.data));
-
       if (
         !response.data ||
         !response.data.username ||
         !response.data.roles ||
-        !response.data.userId
+        !response.data.userId ||
+        !response.data.firstname ||
+        !response.data.lastname
       ) {
         throw new Error("Invalid server response. Missing required data.");
       }
@@ -44,13 +44,13 @@ function Login() {
         user: response.data.username,
         roles: roles,
         userId: response.data.userId,
+        firstname: response.data.firstname,
+        lastname: response.data.lastname,
       });
 
       if (roles.includes("Admin")) {
-        console.log("admin role");
         navigate("/admin/dashboard", { replace: true });
       } else {
-        console.log("user");
         navigate("/user/dashboard", { replace: true });
       }
     } catch (error) {
@@ -75,6 +75,7 @@ function Login() {
           onChange={handleInputChange}
           required
           className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-teal-500"
+          autoComplete="username"
         />
         <label className="font-medium">Password:</label>
         <input

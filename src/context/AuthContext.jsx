@@ -8,6 +8,8 @@ export const AuthProvider = ({ children }) => {
     user: null,
     roles: [],
     userId: null,
+    firstname: null,
+    lastname: null,
   });
 
   return (

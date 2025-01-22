@@ -4,12 +4,14 @@ import axios from "axios";
 import { format } from "date-fns";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { bookAppointment } from "./BookingUtils";
+import ErrorModal from "./ErrorModal";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const UserSchedule = () => {
   const {
-    authState: { user, userId },
+    authState: { userId, firstname, lastname },
   } = useAuth();
   const navigate = useNavigate();
   const [slots, setSlots] = useState([]);
@@ -21,6 +23,7 @@ const UserSchedule = () => {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [showNoSlotsModal, setShowNoSlotsModal] = useState(false);
   const [selectedCaregiverId, setSelectedCaregiverId] = useState(null);
+  const [description, setDescription] = useState("");
 
   useEffect(() => {
     const fetchSlots = async () => {
@@ -40,7 +43,7 @@ const UserSchedule = () => {
         }
 
         const transformedSlots = availableSlots.map((slot) => ({
-          title: "Tillgänglig tid",
+          title: "Available",
           start: new Date(slot.startTime),
           end: new Date(slot.endTime),
           caregiverId: slot.caregiverId,
@@ -68,23 +71,16 @@ const UserSchedule = () => {
 
   const handleSubmit = async () => {
     if (!selectedCaregiverId) {
-      setErrorMessage("Du måste välja en läkare.");
+      setErrorMessage("Select a caregiver");
       return;
     }
 
-    const appointmentData = {
-      patientId: userId,
-      caregiverId: selectedCaregiverId,
-      appointmentTime: selectedSlot.start,
-    };
-
     try {
-      await axios.post(
-        `${API_BASE_URL}/Appointment/createappointment`,
-        appointmentData,
-        {
-          withCredentials: true,
-        }
+      await bookAppointment(
+        userId,
+        selectedSlot,
+        selectedCaregiverId,
+        description
       );
       setIsBookedModal(true);
       setBookingCompleted(true);
@@ -96,12 +92,13 @@ const UserSchedule = () => {
         setErrorMessage(error.response.data.message);
       } else if (error.request) {
         setErrorMessage(
-          "Servern svarar inte. Kontrollera din anslutning och försök igen."
+          "Server not responding. Check your connection and try again."
         );
       } else {
-        setErrorMessage("Nåt gick fel. Försök igen");
+        setErrorMessage("An error occurred. Please try again.");
       }
       setShowErrorModal(true);
+      setShowModal(false);
     }
   };
 
@@ -121,18 +118,16 @@ const UserSchedule = () => {
     setIsBookedModal(false);
     setSelectedCaregiverId(null);
     setErrorMessage("");
+    setDescription("");
   };
 
   const eventStyleGetter = (event) => {
-    let backgroundColor = event.color || "#fff"; // Standardfärg om ingen färg finns
     let style = {
-      backgroundColor,
-      borderRadius: "12px",
-      opacity: 0.8,
+      backgroundColor: event.color || "#fff", // Standardfärg om ingen färg finns,
+      borderRadius: "5px",
       color: "white",
-      border: "1px solid #ddd",
-      alignItems: "center",
-      marginLeft: "5px",
+      border: "none",
+      'margin-left': "5px",
     };
     return {
       style,
@@ -140,25 +135,18 @@ const UserSchedule = () => {
   };
 
   return (
-    <div>
-      <MyCalendar
-        selectTable={true}
-        events={slots}
-        onSelectSlot={handleSelectSlot}
-        onSelectEvent={handleEventClick}
-        eventPropGetter={eventStyleGetter}
-      />
+    <>
       <div>
         {showNoSlotsModal && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
             <div className="p-6 rounded-lg shadow-lg w-96 bg-white">
-              <h2 className="mb-2">Inga tillgängliga tider</h2>
+              <h2 className="mb-2">No available slots</h2>
               <div className="flex justify-end space-x-2">
                 <button
                   onClick={handleNoSlots}
                   className="px-4 py-2 m-2 text-white bg-[#057d7a] rounded hover:bg-[#2fadaa]"
                 >
-                  Stäng
+                  Cancel
                 </button>
               </div>
             </div>
@@ -173,15 +161,18 @@ const UserSchedule = () => {
               style={{ backgroundColor: "#fff" }}
             >
               <h2 className="mb-2">
-                Bokning avser <span className="font-bold">{user}</span>
+                Appointment regarding{" "}
+                <span className="font-bold">
+                  {firstname} {lastname}
+                </span>
               </h2>
-              Tid:{" "}
+              ToD{" "}
               <span className="font-bold">
                 {format(selectedSlot.start, "HH:mm")} -{" "}
                 {format(selectedSlot.end, "HH:mm")}
               </span>
               <p>
-                Datum:{" "}
+                Date:{" "}
                 <span className="font-bold">
                   {format(selectedSlot.start, "yy-MM-dd")}
                 </span>
@@ -191,11 +182,9 @@ const UserSchedule = () => {
                   <p className="text-red-600">{errorMessage}</p>
                 )}
                 <p className="mb-2">
-                  Välj läkare: (
-                  {selectedSlot.caregivers.length > 1
-                    ? `${selectedSlot.caregivers.length} tillgängliga`
-                    : `${selectedSlot.caregivers.length} tillgänglig`}
-                  )
+                  {selectedSlot.caregivers.length === 1
+                    ? "1 doctor available"
+                    : `${selectedSlot.caregivers.length} doctors available`}
                 </p>
                 <select
                   className="w-full p-2 border rounded"
@@ -203,26 +192,37 @@ const UserSchedule = () => {
                     setSelectedCaregiverId(Number(e.target.value))
                   }
                 >
-                  <option value="">Välj här</option>
+                  <option value="">No doctor selected</option>
                   {selectedSlot.caregivers.map((caregiver) => (
-                    <option key={caregiver.id} value={caregiver.id}>
+                    <option
+                      key={caregiver.id}
+                      value={caregiver.id}
+                      className="font-semibold"
+                    >
                       {caregiver.name}
                     </option>
                   ))}
                 </select>
+                <h2 className="m-2">Describe your symptoms</h2>
+                <textarea
+                  className="w-full p-2 border rounded"
+                  placeholder="Symptoms"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
               </div>
               <div className="flex justify-end space-x-2">
                 <button
                   onClick={handleAbort}
                   className="px-4 py-2 m-2 bg-gray-500 text-white rounded hover:bg-gray-600"
                 >
-                  Avbryt
+                  Cancel
                 </button>
                 <button
                   onClick={handleSubmit}
                   className="px-4 py-2 m-2 text-white bg-[#057d7a] rounded hover:bg-[#2fadaa]"
                 >
-                  Boka
+                  Confirm
                 </button>
               </div>
             </div>
@@ -234,39 +234,37 @@ const UserSchedule = () => {
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
             <div className="p-6 rounded-lg shadow-lg w-96 bg-gray-100">
               <h2 className="mb-2">
-                Bekräftelse av tidsbokning för{" "}
-                <span className="font-bold">{user}</span>
+                Confirmation for{" "}
+                <span className="font-bold">
+                  {firstname} {lastname}
+                </span>
               </h2>
               <p>
-                Läkare:{" "}
-                <span className="font-bold">
-                  {
-                    selectedSlot.caregivers.find(
-                      (caregiver) =>
-                        caregiver.id === Number(selectedCaregiverId)
-                    )?.name
-                  }
-                </span>
+                <span className="font-bold">Doctor: </span>
+                {
+                  selectedSlot.caregivers.find(
+                    (caregiver) => caregiver.id === Number(selectedCaregiverId)
+                  )?.name
+                }
               </p>
               <p>
-                Tid:{" "}
-                <span className="font-bold">
-                  {format(selectedSlot.start, "HH:mm")} -{" "}
-                  {format(selectedSlot.end, "HH:mm")}
-                </span>
+                <span className="font-bold">ToD: </span>
+                {format(selectedSlot.start, "HH:mm")} -{" "}
+                {format(selectedSlot.end, "HH:mm")}
               </p>
               <p>
-                Datum:{" "}
-                <span className="font-bold">
-                  {format(selectedSlot.start, "yy-MM-dd")}
-                </span>
+                <span className="font-bold">Date: </span>
+                {format(selectedSlot.start, "yy-MM-dd")}
+              </p>
+              <p>
+                <span className="font-bold">Description:</span> {description}
               </p>
               <div className="flex justify-end space-x-2">
                 <button
                   onClick={handleConfirmClick}
-                  className="px-4 py-2 m-2 text-white bg-[#057d7a] rounded hover:bg-[#2fadaa]"
+                  className="px-4 py-2 mt-3 text-white bg-[#057d7a] rounded hover:bg-[#2fadaa]"
                 >
-                  Okej!
+                  Okay!
                 </button>
               </div>
             </div>
@@ -275,23 +273,20 @@ const UserSchedule = () => {
       </div>
       <div>
         {showErrorModal && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="p-6 rounded-lg shadow-lg w-96 bg-white">
-              <h2 className="mb-2">Fel vid bokning</h2>
-              <p className="text-red-600">{errorMessage}</p>
-              <div className="flex justify-end space-x-2">
-                <button
-                  onClick={() => setShowErrorModal(false)}
-                  className="px-4 py-2 m-2 text-white bg-[#057d7a] rounded hover:bg-[#2fadaa]"
-                >
-                  Stäng
-                </button>
-              </div>
-            </div>
-          </div>
+          <ErrorModal
+            errorMessage={errorMessage}
+            onClose={() => setShowErrorModal(false)}
+          />
         )}
       </div>
-    </div>
+      <MyCalendar
+        selectTable={true}
+        events={slots}
+        onSelectSlot={handleSelectSlot}
+        onSelectEvent={handleEventClick}
+        eventPropGetter={eventStyleGetter}
+      />
+    </>
   );
 };
 

@@ -3,6 +3,7 @@ import { useAuth } from "../hooks/useAuth";
 import MyCalendar from "./Calendar";
 import axios from "axios";
 import moment from "moment";
+import { se } from "date-fns/locale";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -64,7 +65,6 @@ const deleteAvailability = async (id) => {
 };
 
 const getAppointmentById = async (appointmentId) => {
-  console.log("Appointment ID:", appointmentId); // Debugging line
   try {
     const response = await axios.get(
       `${API_BASE_URL}/appointment/getappointmentbyid/${appointmentId}`,
@@ -72,14 +72,19 @@ const getAppointmentById = async (appointmentId) => {
         withCredentials: true,
       }
     );
-    console.log("Fetched Appointment:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching appointment:", error);
     throw error;
   }
 };
-const updateAppointment = async (appointmentId, caregiverid, newavailabilityid, oldavailabilityid, newStartTime) => {
+const updateAppointment = async (
+  appointmentId,
+  caregiverid,
+  newavailabilityid,
+  oldavailabilityid,
+  newStartTime
+) => {
   const payload = {
     AppointmentId: appointmentId,
     caregiverid: caregiverid,
@@ -88,8 +93,6 @@ const updateAppointment = async (appointmentId, caregiverid, newavailabilityid, 
     appointmenttime: newStartTime,
     Status: 0,
   };
-
-  console.log("Payload being sent:", payload); // Debugging line
 
   try {
     const response = await axios.put(
@@ -124,14 +127,40 @@ function AdminSchedule() {
           const availability = await getAvailability(authState);
 
           if (Array.isArray(availability) && availability.length > 0) {
-            const mappedEvents = availability.map((event) => ({
-              id: event.id,
-              title: event.isBooked ? "Booked" : "Available",
-              isBooked: event.isBooked,
-              start: new Date(event.startTime),
-              end: new Date(event.endTime),
-              appointmentId: event.appointmentId, // Ensure this is included
-            }));
+            const mappedEvents = await Promise.all(
+              availability.map(async (event) => {
+                if (event.isBooked && event.appointmentId) {
+                  try {
+                    const appointmentData = await getAppointmentById(
+                      event.appointmentId
+                    );
+
+                    const status =
+                      statusMap[appointmentData.status] || "Unknown";
+
+                    return {
+                      ...event,
+                      title: status,
+                      start: new Date(event.startTime),
+                      end: new Date(event.endTime),
+                      appointmentId: event.appointmentId,
+                    };
+                  } catch (error) {
+                    console.error("Error fetching appointment data:", error);
+                  }
+                } else {
+                  // If sloty is available
+                  return {
+                    ...event,
+                    title: "Available",
+                    start: new Date(event.startTime),
+                    end: new Date(event.endTime),
+                    appointmentId: event.appointmentId,
+                  };
+                }
+              })
+            );
+
             setEvents(mappedEvents);
           } else {
             setEvents([]);
@@ -146,7 +175,8 @@ function AdminSchedule() {
       }
     };
     fetchAvailability();
-  }, [authState]);
+  }, [authState, events]);
+
   const handleSelectEvent = async (event) => {
     if (event.isBooked && event.appointmentId) {
       try {
@@ -154,38 +184,50 @@ function AdminSchedule() {
         setSelectedEvent({
           ...event,
           appointmentInfo: {
-            patient: appointmentInfo.patient.username,
-            caregiver: appointmentInfo.caregiver.username,
+            patient:
+              appointmentInfo.patient.firstname +
+              " " +
+              appointmentInfo.patient.lastname,
+            caregiver:
+              appointmentInfo.caregiver.firstname +
+              " " +
+              appointmentInfo.caregiver.lastname,
+            description: appointmentInfo.description,
+            appointmentStatus: appointmentInfo.status,
           },
+          appointmentStatus: statusMap[appointmentInfo.Status], // Map integer to string status
         });
       } catch (error) {
         setError("Kunde inte hämta bokningsinformation. Vänligen försök igen.");
       }
     } else {
-      setSelectedEvent(event);
+      setSelectedEvent({
+        ...event,
+        appointmentStatus: "Scheduled", // Default status for non-booked events
+      });
     }
   };
 
   const eventPropGetter = (event) => {
     const style = {
-      backgroundColor: event.isBooked ? "green" : "#057d7a",
-      color: "white",
+      backgroundColor: event.isBooked ? "#057d7a" : "darkgray",
+      color: event.isBooked ? "white" : "black",
       borderRadius: "5px",
       border: "none",
+      'margin-left': "5px",
     };
 
     return {
       style,
     };
   };
-  // Round time to the nearest 30-minute interval
+
   const roundToNearest30Minutes = (date) => {
     const minutes = moment(date).minutes();
     const roundedMinutes = minutes < 30 ? 0 : 30;
     return moment(date).minutes(roundedMinutes).seconds(0).toDate();
   };
 
-  // Handle time input change
   const handleTimeChange = (field, value) => {
     const date = moment(value);
     const roundedDate = roundToNearest30Minutes(date.toDate());
@@ -208,7 +250,6 @@ function AdminSchedule() {
     setNewEvent((prev) => ({ ...prev, [field]: roundedDate }));
   };
 
-  // Handle slot selection
   const handleSelectSlot = ({ start, end }) => {
     const adjustedStart = roundToNearest30Minutes(start);
     const adjustedEnd = roundToNearest30Minutes(end);
@@ -221,14 +262,13 @@ function AdminSchedule() {
       return;
     }
 
-    setNewEvent({ title: "", start: adjustedStart, end: adjustedEnd });
+    setNewEvent({ title: "Available", start: adjustedStart, end: adjustedEnd });
     setIsModalOpen(true);
     setTimeError("");
   };
 
-  // Handle event creation
   const handleAddEvent = async () => {
-    if (newEvent.title && newEvent.start && newEvent.end) {
+    if (newEvent.start && newEvent.end) {
       const startHour = moment(newEvent.start).hour();
       const endHour = moment(newEvent.end).hour();
 
@@ -241,7 +281,6 @@ function AdminSchedule() {
         StartTime: newEvent.start,
         EndTime: newEvent.end,
         IsAvailable: true,
-        Title: newEvent.title,
       };
 
       try {
@@ -254,7 +293,7 @@ function AdminSchedule() {
         // 3. Mappa och uppdatera events-tillståndet
         const mappedEvents = updatedAvailability.map((event) => ({
           id: event.id,
-          title: event.Title || "Available", // Använd en standardtitel om Title saknas
+          title: "Available", // Använd en standardtitel om Title saknas
           isBooked: event.isBooked || false, // Ensure isBooked is correctly set
           start: new Date(event.startTime),
           end: new Date(event.endTime),
@@ -263,7 +302,7 @@ function AdminSchedule() {
 
         setEvents(mappedEvents); // Uppdatera events-tillståndet
         setIsModalOpen(false); // Stäng modalen
-        setNewEvent({ title: "", start: "", end: "" }); // Återställ formuläret
+        setNewEvent({ start: "", end: "" }); // Återställ formuläret
       } catch (error) {
         console.error("Error creating availability:", error);
       }
@@ -276,7 +315,6 @@ function AdminSchedule() {
         StartTime: selectedEvent.start,
         EndTime: selectedEvent.end,
         IsAvailable: true,
-        Title: selectedEvent.title,
       };
 
       try {
@@ -319,12 +357,12 @@ function AdminSchedule() {
       console.error("No selected event or appointment ID found.");
       return;
     }
-  
+
     try {
       // Fetch the user's availabilities
       const availabilityList = await getAvailability(authState);
       const availableSlots = availabilityList.filter((slot) => !slot.isBooked);
-  
+
       // Update the availabilities state
       setAvailabilities(availableSlots);
       setIsChangeModalOpen(true);
@@ -332,13 +370,13 @@ function AdminSchedule() {
       console.error("Error fetching availabilities:", error);
     }
   };
-  
+
   const handleSaveNewAppointmentTime = async () => {
     if (!selectedNewAvailability || !selectedEvent) {
       setError("Please select a new time slot.");
       return;
     }
-  
+
     try {
       // Call the updateAppointmentTime function
       await updateAppointment(
@@ -346,11 +384,11 @@ function AdminSchedule() {
         authState.userId, //caregiverid
         selectedNewAvailability.id,
         selectedEvent.id, //oldavailabilityid
-        selectedNewAvailability.startTime,
+        selectedNewAvailability.startTime
       );
       // Fetch the updated availability list
       const updatedAvailability = await getAvailability(authState);
-  
+
       // Map and update the events state
       const mappedEvents = updatedAvailability.map((event) => ({
         id: event.id,
@@ -360,10 +398,10 @@ function AdminSchedule() {
         end: new Date(event.endTime),
         appointmentId: event.appointmentId,
       }));
-  
+
       // Update the events state
       setEvents(mappedEvents);
-  
+
       // Close the modal and reset states
       setIsChangeModalOpen(false);
       setSelectedEvent(null);
@@ -373,7 +411,64 @@ function AdminSchedule() {
       setError("Failed to update the appointment. Please try again.");
     }
   };
-  
+
+  const handleUpdateAppointmentStatus = async () => {
+    if (!selectedEvent || !selectedEvent.appointmentId) {
+      console.error("No selected event or appointment ID found.");
+      return;
+    }
+
+    // Map the frontend status to the backend enum values
+    const statusMap = {
+      Scheduled: 0,
+      Completed: 1,
+      Cancelled: 2,
+    };
+
+    const payload = {
+      AppointmentId: selectedEvent.appointmentId,
+      caregiverid: authState.userId,
+      newavailabilityid: selectedEvent.id,
+      oldavailabilityid: selectedEvent.id,
+      appointmenttime: selectedEvent.start.toISOString(),
+      Status: statusMap[selectedEvent.appointmentStatus],
+    };
+
+    try {
+      const response = await axios.put(
+        `${API_BASE_URL}/appointment/updateappointment`,
+        payload,
+        {
+          withCredentials: true,
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error updating appointment status:", error);
+      if (error.response) {
+        console.error("Backend response:", error.response.data);
+      }
+      throw error;
+    }
+  };
+  const handleSaveAndClose = async () => {
+    try {
+      await handleUpdateAppointmentStatus();
+
+      // Close the modal
+      setSelectedEvent(null);
+    } catch (error) {
+      console.error("Error saving and closing:", error);
+      setError("Failed to save the appointment status. Please try again.");
+    }
+  };
+
+  const statusMap = {
+    0: "Scheduled",
+    1: "Completed",
+    2: "Cancelled",
+  };
+
   return (
     <>
       {/* Add Event Modal */}
@@ -381,15 +476,6 @@ function AdminSchedule() {
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
             <h3 className="text-xl font-bold mb-4">Add availability</h3>
-            <input
-              type="text"
-              placeholder="Titel"
-              value={newEvent.title}
-              onChange={(e) =>
-                setNewEvent({ ...newEvent, title: e.target.value })
-              }
-              className="w-full p-2 border border-gray-300 rounded mb-4"
-            />
             <label className="block mb-2">Start date and time:</label>
             <input
               type="datetime-local"
@@ -445,10 +531,18 @@ function AdminSchedule() {
       {/* Edit Event Modal */}
       {selectedEvent && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-100">
             {selectedEvent.isBooked && selectedEvent.appointmentInfo ? (
               <>
-                <h4 className="text-lg font-semibold mb-2">Booked time</h4>
+                <div className="flex justify-between items-center">
+                  <h4 className="text-lg font-semibold mb-2">Booked time</h4>
+                  <button
+                    className="mr-2"
+                    onClick={() => setSelectedEvent(null)}
+                  >
+                    ❌
+                  </button>
+                </div>
                 <p>
                   <strong>Caretaker:</strong>{" "}
                   {selectedEvent.appointmentInfo.patient}
@@ -467,10 +561,10 @@ function AdminSchedule() {
                 </p>
                 <div className="flex justify-end mt-4 space-x-2">
                   <button
-                    onClick={() => setSelectedEvent(null)}
-                    className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                    onClick={handleSaveAndClose} // Save and close
+                    className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
                   >
-                    Close
+                    Save and Close
                   </button>
                   <button
                     onClick={handleDeleteEvent}
@@ -484,22 +578,29 @@ function AdminSchedule() {
                   >
                     Change
                   </button>
+                  <select
+                    defaultValue={
+                      statusMap[
+                        selectedEvent?.appointmentInfo.appointmentStatus
+                      ]
+                    }
+                    onChange={(e) =>
+                      setSelectedEvent({
+                        ...selectedEvent,
+                        appointmentStatus: e.target.value, // Update the status in state
+                      })
+                    }
+                    className="block px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="Scheduled">Scheduled</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                  </select>
                 </div>
               </>
             ) : (
               <>
                 <h3 className="text-xl font-bold mb-4">Change availability</h3>
-                <input
-                  type="text"
-                  value={selectedEvent.title}
-                  onChange={(e) =>
-                    setSelectedEvent({
-                      ...selectedEvent,
-                      title: e.target.value,
-                    })
-                  }
-                  className="w-full p-2 border border-gray-300 rounded mb-4"
-                />
                 <label className="block mb-2">Start date and time:</label>
                 <input
                   type="datetime-local"
@@ -551,51 +652,51 @@ function AdminSchedule() {
           </div>
         </div>
       )}
- {isChangeModalOpen && (
-  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-    <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-      <h3 className="text-xl font-bold mb-4">Change Appointment Time</h3>
-      <select
-        value={selectedNewAvailability ? selectedNewAvailability.id : ""}
-        onChange={(e) => {
-          const selectedId = e.target.value;
-          const selected = availabilities.find(
-            (avail) => avail.id === Number(selectedId)
-          );
-          setSelectedNewAvailability(selected);
-        }}
-        className="w-full p-2 border border-gray-300 rounded mb-4"
-      >
-        <option value="">Select a new time slot</option>
-        {availabilities.map((avail) => (
-          <option key={avail.id} value={avail.id}>
-            {moment(avail.startTime).format("YYYY-MM-DD HH:mm")} -{" "}
-            {moment(avail.endTime).format("HH:mm")}
-          </option>
-        ))}
-      </select>
-      {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-      <div className="flex justify-end space-x-2">
-        <button
-          onClick={() => {
-            setIsChangeModalOpen(false);
-            setSelectedNewAvailability(null); // Reset selected availability
-            setError(null); // Clear any errors
-          }}
-          className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={handleSaveNewAppointmentTime}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Save
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+      {isChangeModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+            <h3 className="text-xl font-bold mb-4">Change Appointment Time</h3>
+            <select
+              value={selectedNewAvailability ? selectedNewAvailability.id : ""}
+              onChange={(e) => {
+                const selectedId = e.target.value;
+                const selected = availabilities.find(
+                  (avail) => avail.id === Number(selectedId)
+                );
+                setSelectedNewAvailability(selected);
+              }}
+              className="w-full p-2 border border-gray-300 rounded mb-4"
+            >
+              <option value="">Select a new time slot</option>
+              {availabilities.map((avail) => (
+                <option key={avail.id} value={avail.id}>
+                  {moment(avail.startTime).format("YYYY-MM-DD HH:mm")} -{" "}
+                  {moment(avail.endTime).format("HH:mm")}
+                </option>
+              ))}
+            </select>
+            {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={() => {
+                  setIsChangeModalOpen(false);
+                  setSelectedNewAvailability(null); // Reset selected availability
+                  setError(null); // Clear any errors
+                }}
+                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveNewAppointmentTime}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Calendar Component */}
       <MyCalendar
         selectable={true}

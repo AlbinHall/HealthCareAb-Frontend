@@ -6,6 +6,9 @@ const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
 const Register = () => {
   const [formData, setFormData] = useState({
+    firstname: "",
+    lastname: "",
+    email: "",
     username: "",
     password: "",
     confirmPassword: "",
@@ -17,14 +20,19 @@ const Register = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+
+    // Prevent numbers & symbols in firstname and lastname
+    if (name === "firstname" || name === "lastname") {
+      const lettersOnly = value.replace(/[^A-Za-zåäöÅÄÖ]/g, "");
+      setFormData({ ...formData, [name]: lettersOnly });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    setErrorMessage("");
 
     if (formData.password !== formData.confirmPassword) {
       setErrorMessage("Passwords do not match");
@@ -46,10 +54,12 @@ const Register = () => {
       const payload = {
         username: formData.username,
         password: formData.password,
+        firstname: formData.firstname,
+        lastname: formData.lastname,
+        email: formData.email,
       };
 
       const response = await axios.post(`${apiUrl}/auth/register`, payload);
-      console.log("Register successful:", response.data);
       setSuccessMessage(
         "User registered successfully! Redirecting to login page..."
       );
@@ -84,6 +94,38 @@ const Register = () => {
           onChange={handleInputChange}
           required
           className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-teal-500"
+          autoComplete="username"
+        />
+        <label className="font-medium">First name:</label>
+        <input
+          autoFocus
+          name="firstname"
+          type="text"
+          value={formData.firstname}
+          onChange={handleInputChange}
+          required
+          className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-teal-500"
+        />
+        <label className="font-medium">Last name:</label>
+        <input
+          autoFocus
+          name="lastname"
+          type="text"
+          value={formData.lastname}
+          onChange={handleInputChange}
+          required
+          className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-teal-500"
+        />
+        <label className="font-medium">Email:</label>
+        <input
+          autoFocus
+          name="email"
+          type="email"
+          value={formData.email}
+          onChange={handleInputChange}
+          required
+          className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-teal-500"
+          autoComplete="email"
         />
         <label className="font-medium">Password:</label>
         <input
