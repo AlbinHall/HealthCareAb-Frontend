@@ -213,8 +213,9 @@ function AdminSchedule() {
       backgroundColor: event.isBooked ? "#057d7a" : "darkgray",
       color: event.isBooked ? "white" : "black",
       borderRadius: "5px",
-      border: "none",
-      'margin-left': "5px",
+      border: "1px solid white",
+      "margin-left": "5px",
+      display: "block",
     };
 
     return {

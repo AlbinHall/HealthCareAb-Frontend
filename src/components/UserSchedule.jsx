@@ -126,8 +126,9 @@ const UserSchedule = () => {
       backgroundColor: event.color || "#fff", // Standardfärg om ingen färg finns,
       borderRadius: "5px",
       color: "white",
-      border: "none",
-      'margin-left': "5px",
+      border: "1px solid white",
+      marginLeft: "5px",
+      display: "block",
     };
     return {
       style,

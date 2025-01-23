@@ -89,7 +89,14 @@ function AdminDashboard() {
 
           Promise.all(fetchAppointments)
             .then((appointments) => {
-              setAppointments(appointments);
+              // Filter on scheduled appointments
+              const scheduledAppointments = appointments.filter(
+                (appointment) => {
+                  return appointment.status === 0;
+                }
+              );
+
+              setAppointments(scheduledAppointments);
             })
             .catch((error) => {
               console.error("Error fetching appointments:", error);
@@ -131,8 +138,13 @@ function AdminDashboard() {
               appointments.map((appointment, index) => (
                 <li key={index} className="mb-1 p-1 bg-gray-100 rounded-lg">
                   <span className="font-medium">
-                  {appointment.patient.firstname + " " + appointment.patient.lastname} -{" "}
-                  {appointment.caregiver.firstname + " " + appointment.caregiver.lastname}
+                    {appointment.patient.firstname +
+                      " " +
+                      appointment.patient.lastname}{" "}
+                    -{" "}
+                    {appointment.caregiver.firstname +
+                      " " +
+                      appointment.caregiver.lastname}
                   </span>
                   <span className="block text-sm">
                     {new Date(appointment.dateTime).toLocaleString()}
